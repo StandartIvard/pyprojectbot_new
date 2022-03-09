@@ -2,6 +2,7 @@ import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
 import datetime
+import pytz
 
 
 def main():
@@ -11,6 +12,12 @@ def main():
     longpoll = VkBotLongPoll(vk_session, "198062715")
 
     for event in longpoll.listen():
+
+        if datetime.datetime.now(pytz.timezone("KRAT")) == datetime.time(22, 50, 0):
+            vk = vk_session.get_api()
+            vk.messages.send(user_id="klownishe",
+                             message=now.strftime('%d/%m/%Y, %H:%M, %A'),
+                             random_id=random.randint(0, 2 ** 64))
 
         if event.type == VkBotEventType.MESSAGE_NEW:
             print(event)
