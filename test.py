@@ -13,10 +13,9 @@ def main():
 
     for event in longpoll.listen():
 
-        if datetime.datetime.now(pytz.timezone("KRAT")) == datetime.time(23, 20, 0):
-            vk = vk_session.get_api()
+        vk = vk_session.get_api()
             vk.messages.send(user_id="klownishe",
-                             message="Доброе утро!",
+                             message=now.strftime('%d/%m/%Y, %H:%M, %A'),
                              random_id=random.randint(0, 2 ** 64))
 
         if event.type == VkBotEventType.MESSAGE_NEW:
