@@ -13,7 +13,7 @@ def main():
 
     for event in longpoll.listen():
 
-        if datetime.datetime.now(pytz.timezone("KRAT")) == datetime.time(22, 55, 0):
+        if datetime.datetime.now(pytz.timezone("KRAT")) == datetime.time(23, 20, 0):
             vk = vk_session.get_api()
             vk.messages.send(user_id="klownishe",
                              message=now.strftime('%d/%m/%Y, %H:%M, %A'),
