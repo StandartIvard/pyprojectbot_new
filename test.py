@@ -13,13 +13,6 @@ def main():
     longpoll = VkBotLongPoll(vk_session, "198062715")
 
     for event in longpoll.listen():
-        krat = timedelta(hours=7)
-        if datetime.datetime.now() + krat == datetime.time(0, 12, 0):
-            vk = vk_session.get_api()
-            vk.messages.send(user_id="klownishe",
-                             message="Доброе утро!",
-                             random_id=random.randint(0, 2 ** 64))
-
         if event.type == VkBotEventType.MESSAGE_NEW:
             print(event)
             print('Новое сообщение:')
