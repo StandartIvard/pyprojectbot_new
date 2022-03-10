@@ -22,7 +22,7 @@ def main():
             if ("день" in event.obj.message['text']) or ("время" in event.obj.message['text']) or\
                     ("дата" in event.obj.message['text']) or ("число" in event.obj.message['text']):
                 now = datetime.datetime.now()
-                krat = timedelta(hours=3)
+                krat = timedelta(hours=6)
                 vk = vk_session.get_api()
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
