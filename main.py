@@ -2,6 +2,7 @@ import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
 import datetime
+from datetime import timedelta
 import pytz
 
 
@@ -13,12 +14,6 @@ def main():
 
     for event in longpoll.listen():
 
-        if datetime.datetime.now(pytz.timezone("KRAT")) == datetime.time(23, 40, 0):
-            vk = vk_session.get_api()
-            vk.messages.send(user_id="klownishe",
-                             message="Доброе утро!",
-                             random_id=random.randint(0, 2 ** 64))
-
         if event.type == VkBotEventType.MESSAGE_NEW:
             print(event)
             print('Новое сообщение:')
@@ -27,9 +22,10 @@ def main():
             if ("день" in event.obj.message['text']) or ("время" in event.obj.message['text']) or\
                     ("дата" in event.obj.message['text']) or ("число" in event.obj.message['text']):
                 now = datetime.datetime.now()
+                krat = timedelta(hours=3)
                 vk = vk_session.get_api()
                 vk.messages.send(user_id=event.obj.message['from_id'],
-                                     message=now.strftime('%d/%m/%Y, %H:%M, %A'),
+                                 message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
                                  random_id=random.randint(0, 2 ** 64))
                 print()
             else:
@@ -42,3 +38,43 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+'''
+import vk_api
+from vk_api.longpoll import VkLongPoll, VkEventType
+
+
+def auth_handler():
+    key = input("Enter authentication code: ")
+    remember_device = True
+
+    return key, remember_device
+
+
+def main():
+    login, password = "ivard_iv@mail.ru", "UMSAforever12345"
+    vk_session = vk_api.VkApi(
+        login, password,
+        auth_handler=auth_handler
+    )
+
+    try:
+        vk_session.auth()
+    except vk_api.AuthError as error_msg:
+        print(error_msg)
+        return
+
+    longpoll = VkLongPoll(vk_session)
+    vk = vk_session.get_api()
+    for event in longpoll.listen():
+        if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
+            if "доброе утро" in event.text.lower() and event.from_user:
+                vk.messages.send(
+                    user_id=event.user_id,
+                    random_id=event.random_id,
+                    message='Ваш текст')
+
+
+if __name__ == '__main__':
+    main()
+'''

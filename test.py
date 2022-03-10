@@ -2,6 +2,7 @@ import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
 import datetime
+from datetime import timedelta
 import pytz
 
 
@@ -12,10 +13,11 @@ def main():
     longpoll = VkBotLongPoll(vk_session, "198062715")
 
     for event in longpoll.listen():
-
-        vk = vk_session.get_api()
+        krat = timedelta(hours=7)
+        if datetime.datetime.now() + krat == datetime.time(0, 12, 0):
+            vk = vk_session.get_api()
             vk.messages.send(user_id="klownishe",
-                             message=now.strftime('%d/%m/%Y, %H:%M, %A'),
+                             message="Доброе утро!",
                              random_id=random.randint(0, 2 ** 64))
 
         if event.type == VkBotEventType.MESSAGE_NEW:
