@@ -27,7 +27,7 @@ def main():
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
                                  random_id=random.randint(0, 2 ** 64))
-                print()
+                print('lol')
             else:
                 vk = vk_session.get_api()
                 vk.messages.send(user_id=event.obj.message['from_id'],
