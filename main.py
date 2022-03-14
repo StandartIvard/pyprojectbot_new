@@ -10,19 +10,21 @@ import asyncio
 
 
 def echo(update, context):
-    update.message.reply_text(update.message.text)
+    update.message.reply_text("Я получил сообщение <" + update.message.text + ">")
 
 
 async def main():
-    vk_session = vk_api.VkApi(
-        token="78fbb4ff6c6e02e47912a03f740b9057aebd0c553065f88da0d62645a1f33dc7ad37a6751446d5038c296")
-    longpoll = VkBotLongPoll(vk_session, "198062715")
     updater = Updater("5153379485:AAHsOGBUilYA9gkwCfClzswlVc4BQeDhipo", use_context=True)
     dp = updater.dispatcher
     text_handler = MessageHandler(Filters.text, echo)
     dp.add_handler(text_handler)
-    await asyncio.gather(updater.start_polling(), waiting(longpoll, vk_session))
     updater.idle()
+
+    vk_session = vk_api.VkApi(
+    token="78fbb4ff6c6e02e47912a03f740b9057aebd0c553065f88da0d62645a1f33dc7ad37a6751446d5038c296")
+    longpoll = VkBotLongPoll(vk_session, "198062715")
+
+    await asyncio.gather(updater.start_polling(), waiting(longpoll, vk_session))
 
 
 def waiting(longpoll, vk_session):
@@ -39,9 +41,6 @@ def waiting(longpoll, vk_session):
                 vk = vk_session.get_api()
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
-                                 random_id=random.randint(0, 2 ** 64))
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message="ок",
                                  random_id=random.randint(0, 2 ** 64))
             else:
                 vk = vk_session.get_api()
