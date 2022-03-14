@@ -26,6 +26,8 @@ async def main():
 
     await asyncio.gather(updater.start_polling(), waiting(longpoll, vk_session))
 
+    print("ok")
+
 
 def waiting(longpoll, vk_session):
     for event in longpoll.listen():
