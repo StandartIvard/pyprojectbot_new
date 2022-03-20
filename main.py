@@ -32,6 +32,8 @@ async def main():
 
     updater.idle()
 
+    print("ok")
+
 
 async def waiting(longpoll, vk_session):
 
