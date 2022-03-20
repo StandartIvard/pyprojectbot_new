@@ -7,6 +7,7 @@ from telegram.ext import Updater, MessageHandler, Filters
 from telegram.ext import CallbackContext, CommandHandler
 import pytz
 import asyncio
+from telegram.ext import CommandHandler
 
 
 def echo(update, context):
@@ -14,40 +15,81 @@ def echo(update, context):
 
 
 async def main():
+    vkreg = False
     updater = Updater("5153379485:AAHsOGBUilYA9gkwCfClzswlVc4BQeDhipo", use_context=True)
     dp = updater.dispatcher
     text_handler = MessageHandler(Filters.text, echo)
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help))
     dp.add_handler(text_handler)
-    updater.idle()
 
-    vk_session = vk_api.VkApi(
-    token="78fbb4ff6c6e02e47912a03f740b9057aebd0c553065f88da0d62645a1f33dc7ad37a6751446d5038c296")
+    vk_session = vk_api.VkApi(token="78fbb4ff6c6e02e47912a03f740b9057aebd0c553065f88da0d62645a1f33dc7ad37a6751446d5038c296")
     longpoll = VkBotLongPoll(vk_session, "198062715")
 
-    await asyncio.gather(updater.start_polling(), waiting(longpoll, vk_session))
+    print("ok")
+
+    await asyncio.gather(tgwaiting(updater), waiting(longpoll, vk_session))
+
+    updater.idle()
 
 
-def waiting(longpoll, vk_session):
+async def waiting(longpoll, vk_session):
+
     for event in longpoll.listen():
         if event.type == VkBotEventType.MESSAGE_NEW:
-            print(event)
             print('Новое сообщение:')
-            print('Для меня от:', event.obj.message['from_id'])
-            print('Текст:', event.obj.message['text'])
-            if ("день" in event.obj.message['text']) or ("время" in event.obj.message['text']) or\
-                    ("дата" in event.obj.message['text']) or ("число" in event.obj.message['text']):
-                now = datetime.datetime.now()
-                krat = timedelta(hours=3)
-                vk = vk_session.get_api()
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
-                                 random_id=random.randint(0, 2 ** 64))
-            else:
-                vk = vk_session.get_api()
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message="""Вы можете узнать текущую дату, время и день недели, 
-                                 написав <<время>>, <<число>>, <<дата>> и <<день>>""",
-                                 random_id=random.randint(0, 2 ** 64))
+            vk = vk_session.get_api()
+
+            id = str(event.obj.message['from_id'])
+            user_get = vk.users.get(user_ids=(id))
+            user_get = user_get[0]
+            first_name = user_get['first_name']
+            last_name = user_get['last_name']
+            full_name = first_name + " " + last_name
+            print(full_name)
+
+            textt = event.obj.message['text'].lower()
+            if event.from_user:
+                if ("день" in textt) or ("время" in textt) or\
+                        ("дата" in textt) or ("число" in textt):
+                    now = datetime.datetime.now()
+                    krat = timedelta(hours=3)
+
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
+                                     random_id=random.randint(0, 2 ** 64))
+                if ("регистрация" in textt):
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message="Здравствуйте",
+                                     random_id=random.randint(0, 2 ** 64))
+                else:
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message="""Вы можете узнать текущую дату, время и день недели, 
+                                     написав <<время>>, <<число>>, <<дата>> и <<день>>""",
+                                     random_id=random.randint(0, 2 ** 64))
+            elif event.from_chat:
+                if textt[0] == '/':
+                    textt = textt.replace('/', '')
+                    if textt == 'время':
+                        now = datetime.datetime.now()
+                        krat = timedelta(hours=3)
+                        vk.messages.send(chat_id=event.chat_id,
+                                         message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
+                                         random_id=random.randint(0, 2 ** 64))
+
+
+async def tgwaiting(updater):
+    updater.start_polling()
+
+
+def start(update, context):
+    update.message.reply_text(
+        "Привет! Я эхо-бот. Напишите мне что-нибудь, и я пришлю это назад!")
+
+
+def help(update, context):
+    update.message.reply_text(
+        "Я пока не умею помогать... Я только ваше эхо.")
 
 
 if __name__ == '__main__':
