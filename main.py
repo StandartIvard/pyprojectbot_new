@@ -8,6 +8,7 @@ from telegram.ext import CallbackContext, CommandHandler
 import pytz
 import asyncio
 from telegram.ext import CommandHandler
+import hashlib
 
 
 def echo(update, context):
@@ -60,7 +61,7 @@ async def waiting(longpoll, vk_session):
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
                                      random_id=random.randint(0, 2 ** 64))
-                if ("регистрация" in textt):
+                elif ("регистрация" in textt):
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      message="Здравствуйте",
                                      random_id=random.randint(0, 2 ** 64))
