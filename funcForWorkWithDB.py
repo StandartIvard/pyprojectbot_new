@@ -2,16 +2,17 @@ import sqlite3
 import hashlib
 
 
-def getInformDB(name):
+def getInformVK(id):
     con = sqlite3.connect('userDB.db')
     cur = con.cursor()
-    return cur.execute("SELECT * FROM users WHERE name = '" + name + "'").fetchall()
+    print(str(id))
+    return cur.execute("SELECT * FROM users WHERE vkid = '" + str(id) + "';").fetchall()
 
 
 def insertVK(name, id):
     con = sqlite3.connect('userDB.db')
     cur = con.cursor()
-    cur.execute("INSERT INTO users(name,id) VALUES('" + name + "','" + id + "')")
+    cur.execute("INSERT INTO users(name,vkid) VALUES('" + name + "','" + id + "')")
     con.commit()
 
 

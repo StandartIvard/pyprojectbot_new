@@ -3,14 +3,17 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
 import datetime
 from datetime import timedelta
-from funcForWorkWithDB import insertVK, VKpass
+from funcForWorkWithDB import insertVK, VKpass, getInformVK
+
+import telegram
 
 
-async def waiting(longpoll, vk_session):
+async def waiting(longpoll, vk_session, context):
     scen = 0
 
     for event in longpoll.listen():
         if event.type == VkBotEventType.MESSAGE_NEW:
+            global chk
             print('Новое сообщение:')
             vk = vk_session.get_api()
 
@@ -24,11 +27,18 @@ async def waiting(longpoll, vk_session):
 
             textt = event.obj.message['text'].lower()
             if event.from_user:
-                if ("регистрация" in textt) and scen == 0:
-                    vk.messages.send(user_id=event.obj.message['from_id'],
-                                     message="Введите желаемое имя",
-                                     random_id=random.randint(0, 2 ** 64))
-                    scen = 1
+                if ("регистрация" in textt):
+                    try:
+                        req = getInformVK(event.obj.message['from_id'])
+                        print(req)
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                        message=f"""Нет, {req[0][1]}, вы уже зарегистрированы""",
+                                        random_id=random.randint(0, 2 ** 64))
+                    except Exception:
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                        message="Введите желаемое имя",
+                                        random_id=random.randint(0, 2 ** 64))
+                        scen = 1
 
                 elif scen == 1:
                     insertVK(event.obj.message['text'], str(event.obj.message['from_id']))
@@ -40,8 +50,21 @@ async def waiting(longpoll, vk_session):
                 elif scen == 2:
                     VKpass(event.obj.message['text'], event.obj.message['from_id'])
                     vk.messages.send(user_id=event.obj.message['from_id'],
-                        message='''Регистрация завершена! Вы также можете привязать свои аккаунты в Discord и Telegram. 
-                        Для этого напишите "привязать дискорд" или "привязать телегу" соответственно. 
+                        message='''Регистрация завершена!
+                        Вы также можете привязать свой аккаунт в Discord. 
+                        Для этого напишите "привязать дискорд".
+                        Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
+                        Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
+                        Приятного пользования!''',
+                                     random_id=random.randint(0, 2 ** 64))
+                    scen = 0
+
+                elif scen == 0 and textt == "привязки":
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                        message='''Вы можете привязать свой аккаунт в Discord. 
+                        Для этого напишите "привязать дискорд".
+                        Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
+                        Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
                         Приятного пользования!''',
                                      random_id=random.randint(0, 2 ** 64))
 
@@ -56,7 +79,7 @@ async def waiting(longpoll, vk_session):
 
                 elif textt == "хочу узнать id" and scen == 0:
                     vk.messages.send(user_id=event.obj.message['from_id'],
-                                     message="Ваш vk id - " + str(event.obj.message['from_id']),
+                                     message="Ваш id в VK - " + str(event.obj.message['from_id']),
                                      random_id=random.randint(0, 2 ** 64))
 
             elif event.from_chat:
@@ -68,3 +91,24 @@ async def waiting(longpoll, vk_session):
                         vk.messages.send(chat_id=event.chat_id,
                                          message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
                                          random_id=random.randint(0, 2 ** 64))
+                    elif textt == "кто я":
+                        try:
+                            req = getInformVK(event.obj.message['from_id'])
+                            print(req)
+                            vk.messages.send(chat_id=event.chat_id,
+                                             message=f"""Это {req[0][1]}""",
+                                             random_id=random.randint(0, 2 ** 64))
+                        except Exception:
+                            user_get = vk.users.get(user_ids=(str(event.obj.message['from_id'])))
+                            user_get = user_get[0]
+                            first_name = user_get['first_name']
+                            last_name = user_get['last_name']
+                            full_name = first_name + " " + last_name
+                            vk.messages.send(chat_id=event.chat_id,
+                                             message=f"""Это {full_name}""",
+                                             random_id=random.randint(0, 2 ** 64))
+                    elif textt == "id беседы":
+                        vk.messages.send(chat_id=event.chat_id,
+                                         message="id этой беседы - " + str(event.chat_id),
+                                         random_id=random.randint(0, 2 ** 64))
+                        print(str(event.chat_id))

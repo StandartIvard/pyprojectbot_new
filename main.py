@@ -1,25 +1,39 @@
+import telegram
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from telegram.ext import Updater, MessageHandler, Filters
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import CallbackContext, CommandHandler, ConversationHandler
 import asyncio
 from telegram.ext import CommandHandler
+import random
 import hashlib
 from VKbot import waiting
+
+vk_session = vk_api.VkApi(token="78fbb4ff6c6e02e47912a03f740b9057aebd0c553065f88da0d62645a1f33dc7ad37a6751446d5038c296")
+chk = 1
 
 
 async def main():
     updater = Updater("5153379485:AAHsOGBUilYA9gkwCfClzswlVc4BQeDhipo", use_context=True)
     dp = updater.dispatcher
     text_handler = MessageHandler(Filters.text, echo)
-    dp.add_handler(CommandHandler("start", start))
+
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('vkConnect', vkConnect)],
+        states={
+            1: [MessageHandler(Filters.text, first)],
+        },
+        fallbacks = [CommandHandler('stop', stop)]
+    )
+
+    dp.add_handler(conv_handler)
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("id", id))
     dp.add_handler(text_handler)
 
-    vk_session = vk_api.VkApi(token="78fbb4ff6c6e02e47912a03f740b9057aebd0c553065f88da0d62645a1f33dc7ad37a6751446d5038c296")
     longpoll = VkBotLongPoll(vk_session, "198062715")
 
-    await asyncio.gather(tgwaiting(updater), waiting(longpoll, vk_session))
+    await asyncio.gather(tgwaiting(updater), waiting(longpoll, vk_session, updater))
 
     updater.idle()
 
@@ -36,8 +50,13 @@ async def tgwaiting(updater):
 
 
 def echo(update, context):
+    vk = vk_session.get_api()
     update.message.reply_text("Здравствуйте, " + update.message.from_user.username)
     update.message.reply_text("Я получил сообщение <" + update.message.text + ">")
+    vk.messages.send(chat_id=2,
+                     message=f"""{update.message.from_user.username}:
+                     {update.message.text}""",
+                     random_id=random.randint(0, 2 ** 64))
 
 
 def start(update, context):
@@ -48,6 +67,30 @@ def start(update, context):
 def help(update, context):
     update.message.reply_text(
         "Я пока не умею помогать... Я только ваше эхо.")
+
+
+def id(update, context):
+    update.message.reply_text(
+        f"Ваш id: {update.message.from_user.id}")
+
+def stop(update, context):
+    update.message.reply_text(
+        "Ну ладно...")
+
+
+def vkConnect(update, context):
+    update.message.reply_text("""Чтобы начать привязку аккаунта Vk введите ваш id.
+    Его вы можете узнать, написав боту вк 'хочу узнать id'.""")
+    global chk
+    chk += 1
+    return 1
+
+
+def first(update, context):
+    vk = vk_session.get_api()
+    vk.messages.send(user_id=int(update.message.text),
+                     message="Чтобы подтвердить привязку аккаунта к Telegram, введите ваш пароль.",
+                     random_id=random.randint(0, 2 ** 64))
 
 
 #################################################
