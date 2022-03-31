@@ -4,16 +4,16 @@ import random
 import datetime
 from datetime import timedelta
 from funcForWorkWithDB import insertVK, VKpass, getInformVK
+import asyncio
 
 import telegram
 
 
-async def waiting(longpoll, vk_session, context):
+async def waiting(longpoll, vk_session, disc):
     scen = 0
 
     for event in longpoll.listen():
         if event.type == VkBotEventType.MESSAGE_NEW:
-            global chk
             print('Новое сообщение:')
             vk = vk_session.get_api()
 
@@ -83,6 +83,7 @@ async def waiting(longpoll, vk_session, context):
                                      random_id=random.randint(0, 2 ** 64))
 
             elif event.from_chat:
+
                 if textt[0] == '/':
                     textt = textt.replace('/', '')
                     if textt == 'время':
@@ -112,3 +113,17 @@ async def waiting(longpoll, vk_session, context):
                                          message="id этой беседы - " + str(event.chat_id),
                                          random_id=random.randint(0, 2 ** 64))
                         print(str(event.chat_id))
+
+                if event.chat_id == 2:
+                    try:
+                        req = getInformVK(event.obj.message['from_id'])
+                        print(req[0][1])
+                        await disc.send_in_chat(event.obj.message['text'], req[0][1])
+                    except Exception as e:
+                        print(e)
+                        user_get = vk.users.get(user_ids=(str(event.obj.message['from_id'])))
+                        user_get = user_get[0]
+                        first_name = user_get['first_name']
+                        last_name = user_get['last_name']
+                        full_name = first_name + " " + last_name
+                        await disc.send_in_chat(event.obj.message['text'], full_name)

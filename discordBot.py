@@ -13,18 +13,18 @@ class BotsCog(commands.Cog):
 
     @commands.command(name='points')
     async def points(self, ctx):
-        await ctx.send(ctx.message.author.mention + ' у тебя ' + str(bot.users_list[str(ctx.message.author)]) + ' очков!')
+        await ctx.send(ctx.message.author.mention + ' у тебя ' + str(self.users_list[str(ctx.message.author)]) + ' очков!')
 
     @commands.command(name='repeate')
     async def repeate_fraze(self, ctx, *text):
-        if str(bot.last_author) == str(ctx.message.author):
+        if str(self.last_author) == str(ctx.message.author):
             for channel in ctx.guild.text_channels:
                 if channel.name == 'bot_talking':
                     await channel.send('(' + str(ctx.author) + '): ' + ' '.join(text))
 
     @commands.command(name='give_id')
     async def give_id(self, ctx):
-        for member in bot.users_list.keys():
+        for member in self.users_list.keys():
             if str(member) == ' '.join(ctx.message.content.split()[1:]):
                 target = member
         try:
@@ -40,7 +40,7 @@ class DiscordBot(commands.Bot):
         super().__init__(*args, **kwargs)
 
     async def on_ready(self):
-        for g in bot.guilds:
+        for g in self.guilds:
             for c in g.text_channels:
                 await c.send('here i am')
             for m in g.members:
@@ -52,13 +52,13 @@ class DiscordBot(commands.Bot):
                     self.crosschat = chat
 
     async def on_message(self, mes):
-        if mes.author == bot.user:
+        if mes.author == self.user:
             return
         if mes.author not in self.users_list:
             self.users_list[mes.author] = 0
         self.users_list[mes.author] += 1
         if mes.content.startswith('!'):
-            await bot.process_commands(mes)
+            await self.process_commands(mes)
         self.last_author = mes.author
         await self.send_in_chat(mes.content, str(mes.author))
 
@@ -69,7 +69,7 @@ class DiscordBot(commands.Bot):
         await self.crosschat.send('(' + author + '): ' + text)
 
 
-bot = DiscordBot(command_prefix='!')
-bot.add_cog(BotsCog(bot))
+##bot = DiscordBot(command_prefix='!')
+##bot.add_cog(BotsCog(bot))
 
-bot.run(TOKEN)
+##bot.run(TOKEN)

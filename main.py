@@ -13,12 +13,13 @@ import discord
 from discord.ext import commands
 from discord_token import TOKEN
 from discordBot import DiscordBot, BotsCog
+import threading
 
 vk_session = vk_api.VkApi(token=VKToken)
-chk = 1
 
 
-async def main():
+async def TG_bot(bot):
+    longpoll = VkBotLongPoll(vk_session, "198062715")
     updater = Updater(TGToken, use_context=True)
     dp = updater.dispatcher
     text_handler = MessageHandler(Filters.text, echo)
@@ -36,12 +37,8 @@ async def main():
     dp.add_handler(CommandHandler("id", id))
     dp.add_handler(text_handler)
 
-    longpoll = VkBotLongPoll(vk_session, "198062715")
-
-    bot = DiscordBot(command_prefix='!')
-    bot.add_cog(BotsCog(bot))
-
-    await asyncio.gather(tgwaiting(updater), waiting(longpoll, vk_session, updater), bot.run(TOKEN))
+    await tgwaiting(updater)
+    await waiting(longpoll, vk_session, bot)
 
     updater.idle()
 
@@ -89,8 +86,6 @@ def stop(update, context):
 def vkConnect(update, context):
     update.message.reply_text("""Чтобы начать привязку аккаунта Vk введите ваш id.
     Его вы можете узнать, написав боту вк 'хочу узнать id'.""")
-    global chk
-    chk += 1
     return 1
 
 
@@ -107,7 +102,13 @@ def first(update, context):
 
 #################################################
 
+async def disc_start(bot):
+    bot.run(TOKEN)
 
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+#if __name__ == '__main__':
+#    bot = DiscordBot(command_prefix='!')
+#    bot.add_cog(BotsCog(bot))
+#    t1 = threading.Thread(target=VKandTG, args=(bot,))
+#    t2 = threading.Thread(target=disc_start, args=(bot,))
+#    t1.start()
+#    t2.start()

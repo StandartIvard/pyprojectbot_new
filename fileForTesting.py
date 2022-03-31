@@ -1,63 +1,84 @@
+import discord
+from discord.ext import commands
+from discord_token import TOKEN
+from VKbot import waiting
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
-import random
-import datetime
-from datetime import timedelta
-from telegram.ext import Updater, MessageHandler, Filters
-from telegram.ext import CallbackContext, CommandHandler
-import pytz
-import asyncio
+from VK import VKToken, TGToken
+from main import TG_bot
+
+vk_session = vk_api.VkApi(token=VKToken)
+longpoll = VkBotLongPoll(vk_session, "198062715")
 
 
-def echo(update, context):
-    update.message.reply_text(update.message.text)
+class BotsCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command(name='test')
+    async def test(self, ctx):
+        await ctx.send('What???')
+
+    @commands.command(name='points')
+    async def points(self, ctx):
+        await ctx.send(ctx.message.author.mention + ' у тебя ' + str(self.users_list[str(ctx.message.author)]) + ' очков!')
+
+    @commands.command(name='repeate')
+    async def repeate_fraze(self, ctx, *text):
+        if str(self.last_author) == str(ctx.message.author):
+            for channel in ctx.guild.text_channels:
+                if channel.name == 'bot_talking':
+                    await channel.send('(' + str(ctx.author) + '): ' + ' '.join(text))
+
+    @commands.command(name='give_id')
+    async def give_id(self, ctx):
+        for member in self.users_list.keys():
+            if str(member) == ' '.join(ctx.message.content.split()[1:]):
+                target = member
+        try:
+            await ctx.send(str(target.id))
+        except Exception:
+            await ctx.send('Пользователь не найден(')
 
 
-async def main():
-    vk_session = vk_api.VkApi(
-        token="78fbb4ff6c6e02e47912a03f740b9057aebd0c553065f88da0d62645a1f33dc7ad37a6751446d5038c296")
+class DiscordBot(commands.Bot):
+    def __init__(self, *args, **kwargs):
+        self.users_list = {}
+        self.last_author = ''
+        super().__init__(*args, **kwargs)
 
-    longpoll = VkBotLongPoll(vk_session, "198062715")
+    async def on_ready(self):
+        for g in self.guilds:
+            for c in g.text_channels:
+                await c.send('here i am')
+            for m in g.members:
+                if m.name not in self.users_list:
+                    self.users_list[m] = 0
+        for guild in self.guilds:
+            for chat in guild.text_channels:
+                if chat.name == 'bot_talking':
+                    self.crosschat = chat
+        await TG_bot(self)
 
+    async def on_message(self, mes):
+        if mes.author == self.user:
+            return
+        if mes.author not in self.users_list:
+            self.users_list[mes.author] = 0
+        self.users_list[mes.author] += 1
+        if mes.content.startswith('!'):
+            await self.process_commands(mes)
+        self.last_author = mes.author
+        await self.send_in_chat(mes.content, str(mes.author))
 
-    updater = Updater("5153379485:AAHsOGBUilYA9gkwCfClzswlVc4BQeDhipo", use_context=True)
+    async def on_member_join(self, member):
+        print(member)
 
-    dp = updater.dispatcher
-
-    text_handler = MessageHandler(Filters.text, echo)
-
-    dp.add_handler(text_handler)
-    await asyncio.gather(updater.start_polling(), waiting(longpoll, vk_session))
-
-    updater.idle()
-
-
-def waiting(longpoll, vk_session):
-    for event in longpoll.listen():
-        if event.type == VkBotEventType.MESSAGE_NEW:
-            print(event)
-            print('Новое сообщение:')
-            print('Для меня от:', event.obj.message['from_id'])
-            print('Текст:', event.obj.message['text'])
-            if ("день" in event.obj.message['text']) or ("время" in event.obj.message['text']) or\
-                    ("дата" in event.obj.message['text']) or ("число" in event.obj.message['text']):
-                now = datetime.datetime.now()
-                krat = timedelta(hours=3)
-                vk = vk_session.get_api()
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
-                                 random_id=random.randint(0, 2 ** 64))
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message="ок",
-                                 random_id=random.randint(0, 2 ** 64))
-            else:
-                vk = vk_session.get_api()
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message="""Вы можете узнать текущую дату, время и день недели, 
-                                 написав <<время>>, <<число>>, <<дата>> и <<день>>""",
-                                 random_id=random.randint(0, 2 ** 64))
+    async def send_in_chat(self, text, author):
+        await self.crosschat.send('(' + author + '): ' + text)
 
 
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+bot = DiscordBot(command_prefix='!')
+bot.add_cog(BotsCog(bot))
+
+bot.run(TOKEN)
