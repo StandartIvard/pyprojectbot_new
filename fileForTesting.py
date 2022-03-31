@@ -6,6 +6,7 @@ import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from VK import VKToken, TGToken
 from main import TG_bot
+import random
 
 vk_session = vk_api.VkApi(token=VKToken)
 longpoll = VkBotLongPoll(vk_session, "198062715")
@@ -71,10 +72,10 @@ class DiscordBot(commands.Bot):
         self.last_author = mes.author
         await self.send_in_chat(mes.content, str(mes.author))
         vk = vk_session.get_api()
-        vk.messages.send(chat_id=2,
-                         message=f"""{update.message.from_user.username}:
-                             {update.message.text}""",
-                         random_id=random.randint(0, 2 ** 64))
+        #vk.messages.send(chat_id=2,
+        #                 message=f"""{update.message.from_user.username}:                    ##    Здесь нужно имя
+        #                     {update.message.text}""",                                       ##    Здесь нужен текст
+        #                 random_id=random.randint(0, 2 ** 64))
 
     async def on_member_join(self, member):
         print(member)
