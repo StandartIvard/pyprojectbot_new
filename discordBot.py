@@ -62,6 +62,7 @@ class DiscordBot(commands.Bot):
         self.last_author = mes.author
         await self.send_in_chat(mes.content, str(mes.author))
 
+
     async def on_member_join(self, member):
         print(member)
 
