@@ -3,36 +3,112 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
 import datetime
 from datetime import timedelta
-import pytz
+from funcForWorkWithDB import insertVK, VKpass, getInformVK
+
+import telegram
 
 
-def main():
-    vk_session = vk_api.VkApi(
-        token="78fbb4ff6c6e02e47912a03f740b9057aebd0c553065f88da0d62645a1f33dc7ad37a6751446d5038c296")
-
-    longpoll = VkBotLongPoll(vk_session, "198062715")
+async def waiting(longpoll, vk_session, context):
+    scen = 0
 
     for event in longpoll.listen():
         if event.type == VkBotEventType.MESSAGE_NEW:
-            print(event)
+            global chk
             print('Новое сообщение:')
-            print('Для меня от:', event.obj.message['from_id'])
-            print('Текст:', event.obj.message['text'])
-            if ("день" in event.obj.message['text']) or ("время" in event.obj.message['text']) or\
-                    ("дата" in event.obj.message['text']) or ("число" in event.obj.message['text']):
-                now = datetime.datetime.now()
-                vk = vk_session.get_api()
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                     message=now.strftime('%d/%m/%Y, %H:%M, %A'),
-                                 random_id=random.randint(0, 2 ** 64))
-                print()
-            else:
-                vk = vk_session.get_api()
-                vk.messages.send(user_id=event.obj.message['from_id'],
-                                 message="""Вы можете узнать текущую дату, время и день недели, 
-                                 написав <<время>>, <<число>>, <<дата>> и <<день>>""",
-                                 random_id=random.randint(0, 2 ** 64))
+            vk = vk_session.get_api()
 
+            id = str(event.obj.message['from_id'])
+            user_get = vk.users.get(user_ids=(id))
+            user_get = user_get[0]
+            first_name = user_get['first_name']
+            last_name = user_get['last_name']
+            full_name = first_name + " " + last_name
+            print(full_name)
 
-if __name__ == '__main__':
-    main()
+            textt = event.obj.message['text'].lower()
+            if event.from_user:
+                if ("регистрация" in textt):
+                    try:
+                        req = getInformVK(event.obj.message['from_id'])
+                        print(req)
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                        message=f"""Нет, {req[0][1]}, вы уже зарегистрированы""",
+                                        random_id=random.randint(0, 2 ** 64))
+                    except Exception:
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                        message="Введите желаемое имя",
+                                        random_id=random.randint(0, 2 ** 64))
+                        scen = 1
+
+                elif scen == 1:
+                    insertVK(event.obj.message['text'], str(event.obj.message['from_id']))
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message="Хорошо, " + event.obj.message['text'] + ", придумайте пароль.",
+                                     random_id=random.randint(0, 2 ** 64))
+                    scen = 2
+
+                elif scen == 2:
+                    VKpass(event.obj.message['text'], event.obj.message['from_id'])
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                        message='''Регистрация завершена!
+                        Вы также можете привязать свой аккаунт в Discord. 
+                        Для этого напишите "привязать дискорд".
+                        Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
+                        Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
+                        Приятного пользования!''',
+                                     random_id=random.randint(0, 2 ** 64))
+                    scen = 0
+
+                elif scen == 0 and textt == "привязки":
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                        message='''Вы можете привязать свой аккаунт в Discord. 
+                        Для этого напишите "привязать дискорд".
+                        Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
+                        Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
+                        Приятного пользования!''',
+                                     random_id=random.randint(0, 2 ** 64))
+
+                elif (("день" in textt) or ("время" in textt) or\
+                        ("дата" in textt) or ("число" in textt)) and scen == 0:
+                    now = datetime.datetime.now()
+                    krat = timedelta(hours=3)
+
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
+                                     random_id=random.randint(0, 2 ** 64))
+
+                elif textt == "хочу узнать id" and scen == 0:
+                    vk.messages.send(user_id=event.obj.message['from_id'],
+                                     message="Ваш id в VK - " + str(event.obj.message['from_id']),
+                                     random_id=random.randint(0, 2 ** 64))
+
+            elif event.from_chat:
+                if textt[0] == '/':
+                    textt = textt.replace('/', '')
+                    if textt == 'время':
+                        now = datetime.datetime.now()
+                        krat = timedelta(hours=3)
+                        vk.messages.send(chat_id=event.chat_id,
+                                         message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
+                                         random_id=random.randint(0, 2 ** 64))
+                    elif textt == "кто я":
+                        try:
+                            req = getInformVK(event.obj.message['from_id'])
+                            print(req)
+                            vk.messages.send(chat_id=event.chat_id,
+                                             message=f"""Это {req[0][1]}""",
+                                             random_id=random.randint(0, 2 ** 64))
+                        except Exception:
+                            user_get = vk.users.get(user_ids=(str(event.obj.message['from_id'])))
+                            user_get = user_get[0]
+                            first_name = user_get['first_name']
+                            last_name = user_get['last_name']
+                            full_name = first_name + " " + last_name
+                            vk.messages.send(chat_id=event.chat_id,
+                                             message=f"""Это {full_name}""",
+                                             random_id=random.randint(0, 2 ** 64))
+                    elif textt == "id беседы":
+                        vk.messages.send(chat_id=event.chat_id,
+                                         message="id этой беседы - " + str(event.chat_id),
+                                         random_id=random.randint(0, 2 ** 64))
+                        print(str(event.chat_id))
