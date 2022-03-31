@@ -46,6 +46,10 @@ class DiscordBot(commands.Bot):
             for m in g.members:
                 if m.name not in self.users_list:
                     self.users_list[m] = 0
+        for guild in self.guilds:
+            for chat in guild.text_channels:
+                if chat.name == 'bot_talking':
+                    self.crosschat = chat
 
     async def on_message(self, mes):
         if mes.author == bot.user:
@@ -56,9 +60,13 @@ class DiscordBot(commands.Bot):
         if mes.content.startswith('!'):
             await bot.process_commands(mes)
         self.last_author = mes.author
+        await self.send_in_chat(mes.content, str(mes.author))
 
     async def on_member_join(self, member):
         print(member)
+
+    async def send_in_chat(self, text, author):
+        await self.crosschat.send('(' + author + '): ' + text)
 
 
 bot = DiscordBot(command_prefix='!')
