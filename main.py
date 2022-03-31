@@ -9,6 +9,10 @@ import random
 import hashlib
 from VKbot import waiting
 from VK import VKToken, TGToken
+import discord
+from discord.ext import commands
+from discord_token import TOKEN
+from discordBot import DiscordBot, BotsCog
 
 vk_session = vk_api.VkApi(token=VKToken)
 chk = 1
@@ -34,7 +38,10 @@ async def main():
 
     longpoll = VkBotLongPoll(vk_session, "198062715")
 
-    await asyncio.gather(tgwaiting(updater), waiting(longpoll, vk_session, updater))
+    bot = DiscordBot(command_prefix='!')
+    bot.add_cog(BotsCog(bot))
+
+    await asyncio.gather(tgwaiting(updater), waiting(longpoll, vk_session, updater), bot.run(TOKEN))
 
     updater.idle()
 
