@@ -17,7 +17,7 @@ class BotsCog(commands.Cog):
 
     @commands.command(name='repeate')
     async def repeate_fraze(self, ctx, *text):
-        if bot.last_author == str(ctx.message.author):
+        if str(bot.last_author) == str(ctx.message.author):
             for channel in ctx.guild.text_channels:
                 if channel.name == 'bot_talking':
                     await channel.send('(' + str(ctx.author) + '): ' + ' '.join(text))
@@ -25,7 +25,7 @@ class BotsCog(commands.Cog):
     @commands.command(name='give_id')
     async def give_id(self, ctx):
         for member in bot.users_list.keys():
-            if str(member) == ctx.message.content.split()[1:]:
+            if str(member) == ' '.join(ctx.message.content.split()[1:]):
                 target = member
         try:
             await ctx.send(str(target.id))
