@@ -72,10 +72,10 @@ class DiscordBot(commands.Bot):
         self.last_author = mes.author
         await self.send_in_chat(mes.content, str(mes.author))
         vk = vk_session.get_api()
-        #vk.messages.send(chat_id=2,
-        #                 message=f"""{ }:                    ##    Здесь нужно имя пользователя
-        #                     { }""",                                       ##    Здесь нужен текст сообщения
-        #                 random_id=random.randint(0, 2 ** 64))
+        vk.messages.send(chat_id=2,
+                         message=f"""{str(mes.author)}:
+                             {str(mes.content)}""",
+                         random_id=random.randint(0, 2 ** 64))
 
     async def on_member_join(self, member):
         print(member)
