@@ -14,6 +14,7 @@ from discord.ext import commands
 from discord_token import TOKEN
 from discordBot import DiscordBot, BotsCog
 import threading
+from threading import Thread
 
 vk_session = vk_api.VkApi(token=VKToken)
 
@@ -37,10 +38,32 @@ async def TG_bot(bot):
     dp.add_handler(CommandHandler("id", id))
     dp.add_handler(text_handler)
 
-    await tgwaiting(updater)
-    await waiting(longpoll, vk_session, bot)
+    #thread1 = Thread(target=lambda: tgwaiting(updater))
+    #thread2 = Thread(target=lambda: waiting(longpoll, vk_session, bot))
 
-    updater.idle()
+    #thread1.start()
+    #thread2.start()
+
+    Thread(target=tgwaiting, args=(updater,)).start()
+    Thread(target=wrapper, args=(longpoll, vk_session, bot)).start()
+
+
+    #await asyncio.gather(
+    #    asyncio.to_thread(tgwaiting, updater),
+    #    asyncio.to_thread(waiting, longpoll, vk_session, bot),
+    #    asyncio.sleep(1)
+    #)
+    print("okлллл")
+    #updater.idle()
+    #await
+    #await
+
+
+def wrapper(longpoll, vk_session, bot):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(waiting(longpoll, vk_session, bot))
+    loop.close()
 
 
 ######################################################
@@ -50,7 +73,7 @@ async def TG_bot(bot):
 ######################################################
 
 
-async def tgwaiting(updater):
+def tgwaiting(updater):
     updater.start_polling()
 
 
@@ -78,6 +101,7 @@ def id(update, context):
     update.message.reply_text(
         f"Ваш id: {update.message.from_user.id}")
 
+
 def stop(update, context):
     update.message.reply_text(
         "Ну ладно...")
@@ -102,8 +126,8 @@ def first(update, context):
 
 #################################################
 
-async def disc_start(bot):
-    bot.run(TOKEN)
+#async def disc_start(bot):
+#    bot.run(TOKEN)
 
 #if __name__ == '__main__':
 #    bot = DiscordBot(command_prefix='!')
