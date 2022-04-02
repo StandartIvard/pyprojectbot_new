@@ -44,8 +44,8 @@ async def TG_bot(bot):
     #thread1.start()
     #thread2.start()
 
-    Thread(target=tgwaiting, args=(updater,)).start()
-    Thread(target=wrapper, args=(longpoll, vk_session, bot)).start()
+    Thread(target=tgwaiting, args=(updater,), daemon=True).start()
+    Thread(target=wrapper, args=(longpoll, vk_session, bot), daemon=True).start()
 
 
     #await asyncio.gather(
