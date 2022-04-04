@@ -8,6 +8,8 @@ import asyncio
 
 import telegram
 
+regid = list()
+
 
 async def waiting(longpoll, vk_session, disc):
     scen = 0
@@ -38,28 +40,32 @@ async def waiting(longpoll, vk_session, disc):
                         vk.messages.send(user_id=event.obj.message['from_id'],
                                         message="Введите желаемое имя",
                                         random_id=random.randint(0, 2 ** 64))
-                        scen = 1
 
-                elif scen == 1:
-                    insertVK(event.obj.message['text'], str(event.obj.message['from_id']))
-                    vk.messages.send(user_id=event.obj.message['from_id'],
-                                     message="Хорошо, " + event.obj.message['text'] + ", придумайте пароль.",
-                                     random_id=random.randint(0, 2 ** 64))
-                    scen = 2
+                        regid.append(event.obj.message['from_id'])
 
-                elif scen == 2:
-                    VKpass(event.obj.message['text'], event.obj.message['from_id'])
-                    vk.messages.send(user_id=event.obj.message['from_id'],
-                        message='''Регистрация завершена!
-                        Вы также можете привязать свой аккаунт в Discord. 
-                        Для этого напишите "привязать дискорд".
-                        Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
-                        Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
-                        Приятного пользования!''',
-                                     random_id=random.randint(0, 2 ** 64))
-                    scen = 0
+                        for event in longpoll.listen():
+                            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text and event.obj.message['from_id'] in regid:
+                                insertVK(event.obj.message['text'], str(event.obj.message['from_id']))
 
-                elif scen == 0 and textt == "привязки":
+                                vk.messages.send(user_id=event.obj.message['from_id'],
+                                                 message="Хорошо, " + event.obj.message['text'] + ", придумайте пароль.",
+                                                 random_id=random.randint(0, 2 ** 64))
+
+                                for event in longpoll.listen():
+                                    if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
+                                        VKpass(event.obj.message['text'], event.obj.message['from_id'])
+                                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                                         message='''Регистрация завершена!
+                                                                Вы также можете привязать свой аккаунт в Discord. 
+                                                                Для этого напишите "привязать дискорд".
+                                                                Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
+                                                                Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
+                                                                Приятного пользования!''',
+                                                         random_id=random.randint(0, 2 ** 64))
+                                        break
+                                break
+
+                elif textt == "привязки":
                     vk.messages.send(user_id=event.obj.message['from_id'],
                         message='''Вы можете привязать свой аккаунт в Discord. 
                         Для этого напишите "привязать дискорд".
@@ -69,7 +75,7 @@ async def waiting(longpoll, vk_session, disc):
                                      random_id=random.randint(0, 2 ** 64))
 
                 elif (("день" in textt) or ("время" in textt) or\
-                        ("дата" in textt) or ("число" in textt)) and scen == 0:
+                        ("дата" in textt) or ("число" in textt)):
                     now = datetime.datetime.now()
                     krat = timedelta(hours=3)
 
