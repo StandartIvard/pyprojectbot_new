@@ -44,7 +44,7 @@ async def waiting(longpoll, vk_session, disc):
                         regid.append(event.obj.message['from_id'])
 
                         for event in longpoll.listen():
-                            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text and event.obj.message['from_id'] in regid:
+                            if event.type == VkBotEventType.MESSAGE_NEW and event.to_me and event.text and event.obj.message['from_id'] in regid:
                                 insertVK(event.obj.message['text'], str(event.obj.message['from_id']))
 
                                 vk.messages.send(user_id=event.obj.message['from_id'],
@@ -52,7 +52,7 @@ async def waiting(longpoll, vk_session, disc):
                                                  random_id=random.randint(0, 2 ** 64))
 
                                 for event in longpoll.listen():
-                                    if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
+                                    if event.type == VkBotEventType.MESSAGE_NEW and event.to_me and event.text:
                                         VKpass(event.obj.message['text'], event.obj.message['from_id'])
                                         vk.messages.send(user_id=event.obj.message['from_id'],
                                                          message='''Регистрация завершена!
