@@ -8,7 +8,7 @@ import asyncio
 
 import telegram
 
-regid = list()
+regid = {}
 
 
 async def waiting(longpoll, vk_session, disc):
@@ -29,7 +29,7 @@ async def waiting(longpoll, vk_session, disc):
 
             textt = event.obj.message['text'].lower()
             if event.from_user:
-                if ("регистрация" in textt):
+                if "регистрация" in textt:
                     try:
                         req = getInformVK(event.obj.message['from_id'])
                         print(req)
@@ -40,30 +40,27 @@ async def waiting(longpoll, vk_session, disc):
                         vk.messages.send(user_id=event.obj.message['from_id'],
                                         message="Введите желаемое имя",
                                         random_id=random.randint(0, 2 ** 64))
+                        regid[event.obj.message['from_id']] = "name"
 
-                        regid.append(event.obj.message['from_id'])
+                elif event.obj.message['from_id'] in regid.keys():
+                    if regid[event.obj.message['from_id']] == "name":
+                        insertVK(event.obj.message['text'], str(event.obj.message['from_id']))
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message="Хорошо, " + event.obj.message['text'] + ", придумайте пароль.",
+                                         random_id=random.randint(0, 2 ** 64))
+                        regid[event.obj.message['from_id']] = "password"
 
-                        for event in longpoll.listen():
-                            if event.type == VkBotEventType.MESSAGE_NEW and event.to_me and event.text and event.obj.message['from_id'] in regid:
-                                insertVK(event.obj.message['text'], str(event.obj.message['from_id']))
-
-                                vk.messages.send(user_id=event.obj.message['from_id'],
-                                                 message="Хорошо, " + event.obj.message['text'] + ", придумайте пароль.",
-                                                 random_id=random.randint(0, 2 ** 64))
-
-                                for event in longpoll.listen():
-                                    if event.type == VkBotEventType.MESSAGE_NEW and event.to_me and event.text:
-                                        VKpass(event.obj.message['text'], event.obj.message['from_id'])
-                                        vk.messages.send(user_id=event.obj.message['from_id'],
-                                                         message='''Регистрация завершена!
-                                                                Вы также можете привязать свой аккаунт в Discord. 
-                                                                Для этого напишите "привязать дискорд".
-                                                                Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
-                                                                Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
-                                                                Приятного пользования!''',
-                                                         random_id=random.randint(0, 2 ** 64))
-                                        break
-                                break
+                    elif regid[event.obj.message['from_id']] == "password":
+                        VKpass(event.obj.message['text'], event.obj.message['from_id'])
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message='''Регистрация завершена!
+                                                Вы также можете привязать свой аккаунт в Discord. 
+                                                Для этого напишите "привязать дискорд".
+                                                Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
+                                                Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
+                                                Приятного пользования!''',
+                                         random_id=random.randint(0, 2 ** 64))
+                        del regid[event.obj.message['from_id']]
 
                 elif textt == "привязки":
                     vk.messages.send(user_id=event.obj.message['from_id'],
@@ -83,7 +80,7 @@ async def waiting(longpoll, vk_session, disc):
                                      message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
                                      random_id=random.randint(0, 2 ** 64))
 
-                elif textt == "хочу узнать id" and scen == 0:
+                elif textt == "хочу узнать id":
                     vk.messages.send(user_id=event.obj.message['from_id'],
                                      message="Ваш id в VK - " + str(event.obj.message['from_id']),
                                      random_id=random.randint(0, 2 ** 64))
