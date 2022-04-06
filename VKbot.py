@@ -4,24 +4,29 @@ import random
 import datetime
 from datetime import timedelta
 from funcForWorkWithDB import insertVK, VKpass, getInformVK
+from vk_api.upload import VkUpload
 import asyncio
 import wikipedia
-wikipedia.set_lang("ru")
-
 import telegram
+import requests
+from io import BytesIO
+from VK import Nasa_api
+
 
 regid = {}
+wikipedia.set_lang("ru")
 
 
 async def waiting(longpoll, vk_session, disc):
     scen = 0
     print('ok')
+    vk = vk_session.get_api()
+    upload = VkUpload(vk)
 
     for event in longpoll.listen():
         print('okkk')
         if event.type == VkBotEventType.MESSAGE_NEW:
             print('Новое сообщение:')
-            vk = vk_session.get_api()
 
             id = str(event.obj.message['from_id'])
             user_get = vk.users.get(user_ids=(id))
@@ -122,10 +127,10 @@ async def waiting(longpoll, vk_session, disc):
                                          message="id этой беседы - " + str(event.chat_id),
                                          random_id=random.randint(0, 2 ** 64))
                         print(str(event.chat_id))
-                    elif textt[:3] == "вики":
+                    elif textt[:4] == "вики":
                         try:
                             vk.messages.send(chat_id=event.chat_id,
-                                             message=wikipedia.summary(wikipedia.suggest(textt[3:])),
+                                             message=wikipedia.summary(textt[5:]),
                                              random_id=random.randint(0, 2 ** 64))
                         except Exception as e:
                             print(e)
@@ -146,3 +151,31 @@ async def waiting(longpoll, vk_session, disc):
                         last_name = user_get['last_name']
                         full_name = first_name + " " + last_name
                         #await disc.send_in_chat(event.obj.message['text'], full_name)
+
+                if "фото" in textt:
+                    endpoint = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos"
+
+                    print("TRACK")
+                    #query_params = {"api_key": Nasa_api, "earth_date": datetime.date.today().strftime("%y-%m-%d")}
+                    query_params = {"api_key": Nasa_api, "earth_date": "2020-07-01"}
+                    print(type(datetime.date.today().strftime("%y-%m-%d")))
+                    response = requests.get(endpoint, params=query_params)
+                    photos = response.json()["photos"]
+                    print("NEXT TRACK")
+                    for i in range(len(photos)):
+                        print(i)
+                        img = requests.get(photos[i]["img_src"]).content
+                        f = BytesIO(img)
+
+                        photo = upload.photo_messages(f)[0]
+
+                        owner_id = photo['owner_id']
+                        photo_id = photo['id']
+                        access_key = photo['access_key']
+                        attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                        vk.messages.send(
+                            random_id=random.randint(0, 2 ** 64),
+                            peer_id=event.message.peer_id,
+                            attachment=attachment
+                        )
+                    print("Ended")
