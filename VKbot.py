@@ -5,6 +5,8 @@ import datetime
 from datetime import timedelta
 from funcForWorkWithDB import insertVK, VKpass, getInformVK
 import asyncio
+import wikipedia
+wikipedia.set_lang("ru")
 
 import telegram
 
@@ -73,7 +75,7 @@ async def waiting(longpoll, vk_session, disc):
                         Приятного пользования!''',
                                      random_id=random.randint(0, 2 ** 64))
 
-                    await disc.send_in_chat(event.obj.message['text'], full_name)
+                    #await disc.send_in_chat(event.obj.message['text'], full_name)
 
                 elif (("день" in textt) or ("время" in textt) or\
                         ("дата" in textt) or ("число" in textt)):
@@ -120,6 +122,16 @@ async def waiting(longpoll, vk_session, disc):
                                          message="id этой беседы - " + str(event.chat_id),
                                          random_id=random.randint(0, 2 ** 64))
                         print(str(event.chat_id))
+                    elif textt[:3] == "вики":
+                        try:
+                            vk.messages.send(chat_id=event.chat_id,
+                                             message=wikipedia.summary(wikipedia.suggest(textt[3:])),
+                                             random_id=random.randint(0, 2 ** 64))
+                        except Exception as e:
+                            print(e)
+                            vk.messages.send(chat_id=event.chat_id,
+                                             message="Ошибка!!!",
+                                             random_id=random.randint(0, 2 ** 64))
 
                 if event.chat_id == 2:
                     try:
