@@ -7,6 +7,7 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from VK import VKToken, TGToken
 from main import TG_bot
 import random
+import asyncio
 
 vk_session = vk_api.VkApi(token=VKToken)
 longpoll = VkBotLongPoll(vk_session, "198062715")
@@ -86,5 +87,6 @@ class DiscordBot(commands.Bot):
 
 bot = DiscordBot(command_prefix='!')
 bot.add_cog(BotsCog(bot))
-
-bot.run(TOKEN)
+loop = asyncio.get_event_loop()
+loop.run_until_complete(bot.run(TOKEN))
+loop.close()

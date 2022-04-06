@@ -13,8 +13,10 @@ regid = {}
 
 async def waiting(longpoll, vk_session, disc):
     scen = 0
+    print('ok')
 
     for event in longpoll.listen():
+        print('okkk')
         if event.type == VkBotEventType.MESSAGE_NEW:
             print('Новое сообщение:')
             vk = vk_session.get_api()
@@ -71,6 +73,8 @@ async def waiting(longpoll, vk_session, disc):
                         Приятного пользования!''',
                                      random_id=random.randint(0, 2 ** 64))
 
+                    await disc.send_in_chat(event.obj.message['text'], full_name)
+
                 elif (("день" in textt) or ("время" in textt) or\
                         ("дата" in textt) or ("число" in textt)):
                     now = datetime.datetime.now()
@@ -121,7 +125,7 @@ async def waiting(longpoll, vk_session, disc):
                     try:
                         req = getInformVK(event.obj.message['from_id'])
                         print(req[0][1])
-                        await disc.send_in_chat(event.obj.message['text'], req[0][1])
+                        #await disc.send_in_chat(event.obj.message['text'], req[0][1])
                     except Exception as e:
                         print(e)
                         user_get = vk.users.get(user_ids=(str(event.obj.message['from_id'])))
@@ -129,4 +133,4 @@ async def waiting(longpoll, vk_session, disc):
                         first_name = user_get['first_name']
                         last_name = user_get['last_name']
                         full_name = first_name + " " + last_name
-                        await disc.send_in_chat(event.obj.message['text'], full_name)
+                        #await disc.send_in_chat(event.obj.message['text'], full_name)
