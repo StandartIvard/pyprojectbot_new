@@ -45,7 +45,13 @@ async def TG_bot(bot):
     #thread2.start()
 
     Thread(target=tgwaiting, args=(updater,), daemon=True).start()
+    ##wrapper(longpoll, vk_session, bot)
     Thread(target=wrapper, args=(longpoll, vk_session, bot), daemon=True).start()
+    ##await waiting(longpoll, vk_session, bot)
+
+    #loop = asyncio.new_event_loop()
+    #asyncio.set_event_loop(loop)
+    #asyncio.run_coroutine_threadsafe(waiting(longpoll, vk_session, bot), loop)
 
 
     #await asyncio.gather(
@@ -61,7 +67,6 @@ async def TG_bot(bot):
 
 def wrapper(longpoll, vk_session, bot):
     loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     loop.run_until_complete(waiting(longpoll, vk_session, bot))
     loop.close()
 

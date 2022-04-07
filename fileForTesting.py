@@ -97,7 +97,6 @@ class DiscordBot(commands.Bot):
         print(member)
 
     async def send_in_chat(self, text, author):
-        print(self.crosschat.name, author, text)
         await self.crosschat.send('(' + author + '): ' + text)
 
     def invite(self):
@@ -111,4 +110,6 @@ bot = DiscordBot(command_prefix='!')
 bot.add_cog(BotsCog(bot))
 bot.loop.create_task(bot.send_on_timer('bot_talking', 'abracadabra'))
 
-bot.run(TOKEN)
+loop = asyncio.get_event_loop()
+loop.run_until_complete(bot.run(TOKEN))
+loop.close()

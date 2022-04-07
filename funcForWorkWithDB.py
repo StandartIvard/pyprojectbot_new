@@ -34,4 +34,4 @@ def SetPassword(name, password):
 
 con = sqlite3.connect('DBuser.db')
 cur = con.cursor()
-##print(cur.execute("SELECT * FROM users").fetchall())
+print(cur.execute("SELECT * FROM users").fetchall())
