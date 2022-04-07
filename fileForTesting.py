@@ -54,14 +54,16 @@ class DiscordBot(commands.Bot):
         self.last_author = ''
         super().__init__(*args, **kwargs)
 
-    async def send_on_timer(self, channel_name, text):
-        await asyncio.sleep(5)
+    async def send_on_timer(self, channel_name, messages_list):
+        await asyncio.sleep(0.01)
         for guild in self.guilds:
             for channel in guild.text_channels:
                 if channel_name == channel.name:
                     cur_id = channel.id
-        await self.get_channel(cur_id).send(text)
-        self.loop.create_task(self.send_on_timer(channel_name, text))
+        if len(messages_list) > 0:
+            await self.get_channel(cur_id).send('(' + messages_list[0] + '): ' + messages_list[1])
+            messages_list.pop(0)
+        self.loop.create_task(self.send_on_timer(channel_name, messages_list))
 
     async def on_ready(self):
         for g in self.guilds:
