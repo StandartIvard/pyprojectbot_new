@@ -7,6 +7,7 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from VK import VKToken, TGToken
 from main import TG_bot
 import random
+import asyncio
 
 vk_session = vk_api.VkApi(token=VKToken)
 longpoll = VkBotLongPoll(vk_session, "198062715")
@@ -22,18 +23,18 @@ class BotsCog(commands.Cog):
 
     @commands.command(name='points')
     async def points(self, ctx):
-        await ctx.send(ctx.message.author.mention + ' у тебя ' + str(self.users_list[str(ctx.message.author)]) + ' очков!')
+        await ctx.send(ctx.message.author.mention + ' у тебя ' + str(bot.users_list[str(ctx.message.author)]) + ' очков!')
 
     @commands.command(name='repeate')
     async def repeate_fraze(self, ctx, *text):
-        if str(self.last_author) == str(ctx.message.author):
+        if str(bot.last_author) == str(ctx.message.author):
             for channel in ctx.guild.text_channels:
                 if channel.name == 'bot_talking':
                     await channel.send('(' + str(ctx.author) + '): ' + ' '.join(text))
 
     @commands.command(name='give_id')
     async def give_id(self, ctx):
-        for member in self.users_list.keys():
+        for member in bot.users_list.keys():
             if str(member) == ' '.join(ctx.message.content.split()[1:]):
                 target = member
         try:
@@ -41,12 +42,26 @@ class BotsCog(commands.Cog):
         except Exception:
             await ctx.send('Пользователь не найден(')
 
+    @commands.command(name='info')
+    async def info(self, ctx):
+        await ctx.send('Список команд:\n!give_id <имя пользователя> - id пользователя\n'
+                       '!repeate <текст> - повторить текст\nСкоро команд будет больше.')
+
 
 class DiscordBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         self.users_list = {}
         self.last_author = ''
         super().__init__(*args, **kwargs)
+
+    async def send_on_timer(self, channel_name, text):
+        await asyncio.sleep(5)
+        for guild in self.guilds:
+            for channel in guild.text_channels:
+                if channel_name == channel.name:
+                    cur_id = channel.id
+        await self.get_channel(cur_id).send(text)
+        self.loop.create_task(self.send_on_timer(channel_name, text))
 
     async def on_ready(self):
         for g in self.guilds:
@@ -70,7 +85,8 @@ class DiscordBot(commands.Bot):
         if mes.content.startswith('!'):
             await self.process_commands(mes)
         self.last_author = mes.author
-        await self.send_in_chat(mes.content, str(mes.author))
+        if mes.channel.name != 'bot_talking':
+            return
         vk = vk_session.get_api()
         vk.messages.send(chat_id=2,
                          message=f"""{str(mes.author)}:
@@ -81,10 +97,18 @@ class DiscordBot(commands.Bot):
         print(member)
 
     async def send_in_chat(self, text, author):
+        print(self.crosschat.name, author, text)
         await self.crosschat.send('(' + author + '): ' + text)
+
+    def invite(self):
+        for guild in self.guilds:
+            for channel in guild.text_channels:
+                if channel.name == 'общий':
+                    return str(channel.create_invite())
 
 
 bot = DiscordBot(command_prefix='!')
 bot.add_cog(BotsCog(bot))
+bot.loop.create_task(bot.send_on_timer('bot_talking', 'abracadabra'))
 
 bot.run(TOKEN)

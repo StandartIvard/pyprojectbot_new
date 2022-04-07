@@ -53,9 +53,9 @@ async def waiting(longpoll, vk_session, disc):
                     elif regid[event.obj.message['from_id']] == "password":
                         VKpass(event.obj.message['text'], event.obj.message['from_id'])
                         vk.messages.send(user_id=event.obj.message['from_id'],
-                                         message='''Регистрация завершена!
+                                         message=f'''Регистрация завершена!
                                                 Вы также можете привязать свой аккаунт в Discord. 
-                                                Для этого напишите "привязать дискорд".
+                                                Для этого зайдите на наш сервер дискорд {disc.invite()} и получите дальнейшие инструкции.
                                                 Кроме этого вы можете привязать Telegram, однако эта привязка не осуществляется через Vk.
                                                 Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
                                                 Приятного пользования!''',
@@ -121,7 +121,7 @@ async def waiting(longpoll, vk_session, disc):
                     try:
                         req = getInformVK(event.obj.message['from_id'])
                         print(req[0][1])
-                        await disc.send_in_chat(event.obj.message['text'], req[0][1])
+                        await disc.send_in_chat(str(event.obj.message['text']), str(req[0][1]))
                     except Exception as e:
                         print(e)
                         user_get = vk.users.get(user_ids=(str(event.obj.message['from_id'])))
@@ -129,4 +129,4 @@ async def waiting(longpoll, vk_session, disc):
                         first_name = user_get['first_name']
                         last_name = user_get['last_name']
                         full_name = first_name + " " + last_name
-                        await disc.send_in_chat(event.obj.message['text'], full_name)
+                        await disc.send_in_chat(str(event.obj.message['text']), str(full_name))
