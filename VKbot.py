@@ -10,7 +10,9 @@ import wikipedia
 import telegram
 import requests
 from io import BytesIO
-from VK import Nasa_api
+from VK import Nasa_api, GIF_api
+import messagesFile
+import json
 
 
 regid = {}
@@ -143,6 +145,7 @@ async def waiting(longpoll, vk_session, disc):
                         req = getInformVK(event.obj.message['from_id'])
                         print(req[0][1])
                         #await disc.send_in_chat(event.obj.message['text'], req[0][1])
+                        messagesFile.vk_messages.append((event.obj.message['text'], req[0][1]))
                     except Exception as e:
                         print(e)
                         user_get = vk.users.get(user_ids=(str(event.obj.message['from_id'])))
@@ -151,8 +154,9 @@ async def waiting(longpoll, vk_session, disc):
                         last_name = user_get['last_name']
                         full_name = first_name + " " + last_name
                         #await disc.send_in_chat(event.obj.message['text'], full_name)
+                        messagesFile.vk_messages.append((event.obj.message['text'], full_name))
 
-                if "фото" in textt:
+                if "фото" == textt:
                     endpoint = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos"
 
                     print("TRACK")
@@ -179,3 +183,28 @@ async def waiting(longpoll, vk_session, disc):
                             attachment=attachment
                         )
                     print("Ended")
+
+                if ("котик" in textt) or ("котейка" in textt):
+                    imgURL = requests.get("https://aws.random.cat/meow")
+                    data = imgURL.text
+                    print(data)
+                    print("REAGY")
+                    img = requests.get(imgURL.json()["file"]).content
+                    f = BytesIO(img)
+
+                    photo = upload.photo_messages(f)[0]
+
+                    owner_id = photo['owner_id']
+                    photo_id = photo['id']
+                    access_key = photo['access_key']
+                    attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                    vk.messages.send(
+                        random_id=random.randint(0, 2 ** 64),
+                        peer_id=event.message.peer_id,
+                        message='Кто-то сказал "котик"?'
+                    )
+                    vk.messages.send(
+                        random_id=random.randint(0, 2 ** 64),
+                        peer_id=event.message.peer_id,
+                        attachment=attachment
+                    )

@@ -8,6 +8,9 @@ from VK import VKToken, TGToken
 from main import TG_bot
 import random
 import asyncio
+import messagesFile
+
+messagesFile.init()
 
 vk_session = vk_api.VkApi(token=VKToken)
 longpoll = VkBotLongPoll(vk_session, "198062715")
@@ -61,7 +64,7 @@ class DiscordBot(commands.Bot):
                 if channel_name == channel.name:
                     cur_id = channel.id
         if len(messages_list) > 0:
-            await self.get_channel(cur_id).send('(' + messages_list[0] + '): ' + messages_list[1])
+            await self.get_channel(cur_id).send('(' + messages_list[0][1] + '): ' + messages_list[0][0])
             messages_list.pop(0)
         self.loop.create_task(self.send_on_timer(channel_name, messages_list))
 
@@ -110,7 +113,7 @@ class DiscordBot(commands.Bot):
 
 bot = DiscordBot(command_prefix='!')
 bot.add_cog(BotsCog(bot))
-bot.loop.create_task(bot.send_on_timer('bot_talking', vk_messages))
+bot.loop.create_task(bot.send_on_timer('bot_talking', messagesFile.vk_messages))
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(bot.run(TOKEN))

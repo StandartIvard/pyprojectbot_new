@@ -15,6 +15,8 @@ from discord_token import TOKEN
 from discordBot import DiscordBot, BotsCog
 import threading
 from threading import Thread
+import messagesFile
+
 
 vk_session = vk_api.VkApi(token=VKToken)
 
@@ -90,6 +92,7 @@ def echo(update, context):
                      message=f"""{update.message.from_user.username}:
                      {update.message.text}""",
                      random_id=random.randint(0, 2 ** 64))
+    messagesFile.vk_messages.append((update.message.text, update.message.from_user.username))
 
 
 def start(update, context):
