@@ -16,6 +16,13 @@ def insertVK(name, id):
     con.commit()
 
 
+def SetDiscord(name, id):
+    con = sqlite3.connect('DBuser.db')
+    cur = con.cursor()
+    cur.execute("UPDATE users SET disid = '" + id + "' WHERE name = '" + name + "';")
+    con.commit()
+
+
 def VKpass(password, id):
     con = sqlite3.connect('DBuser.db')
     cur = con.cursor()

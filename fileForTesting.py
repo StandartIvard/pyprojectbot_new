@@ -115,6 +115,7 @@ class DiscordBot(commands.Bot):
                 print(cur_users_data[0], str(mes.content).split()[0])
                 if cur_users_data[0][2] == str(mes.content).split()[0]:
                     await mes.channel.send('Ура! Это вы - ' + funcForWorkWithDB.getInformVK(self.new_users[mes.author.id])[0][1] + '?')
+                    funcForWorkWithDB.SetDiscord(cur_users_data[0][1], str(mes.author.id))
                 else:
                     await mes.channel.send('Неверный пароль!')
         try:
