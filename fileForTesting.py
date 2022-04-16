@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+
+import funcForWorkWithDB
 from discord_token import TOKEN
 from VKbot import waiting
 import vk_api
@@ -50,12 +52,17 @@ class BotsCog(commands.Cog):
         await ctx.send('Список команд:\n!give_id <имя пользователя> - id пользователя\n'
                        '!repeate <текст> - повторить текст\nСкоро команд будет больше.')
 
+    @commands.command(name='привязать')
+    async def merge(self, ctx):
+        pass
+
 
 class DiscordBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         self.users_list = {}
         self.last_author = ''
         super().__init__(*args, **kwargs)
+        self.new_users = {}
 
     async def send_on_timer(self, channel_name, messages_list):
         await asyncio.sleep(0.01)
@@ -90,13 +97,35 @@ class DiscordBot(commands.Bot):
         if mes.content.startswith('!'):
             await self.process_commands(mes)
         self.last_author = mes.author
-        if mes.channel.name != 'bot_talking':
-            return
-        vk = vk_session.get_api()
-        vk.messages.send(chat_id=2,
-                         message=f"""{str(mes.author)}:
-                             {str(mes.content)}""",
-                         random_id=random.randint(0, 2 ** 64))
+        try:
+            if mes.channel.name != 'bot_talking':
+                return
+        except AttributeError:
+            if mes.content.startswith('!привязать'):
+                await mes.channel.send('Напишите ваш VK ID.')
+                self.new_users[mes.author.id] = -1
+            elif mes.author.id in self.new_users and self.new_users[mes.author.id] == -1:
+                try:
+                    self.new_users[mes.author.id] = int(mes.content.split()[0])
+                    await mes.channel.send('Введите пароль, который вы получили у ботов других соц. сетей. Если вы потеряли пароль, напишите ... чтобы мы вам его напомнили.')
+                except Exception:
+                    await mes.channel.send('Что-то пошло не так, возможно вы ввели лишние символы или ещё как-то ошиблись в форме.')
+            elif mes.author.id in self.new_users and self.new_users[mes.author.id] != -1:
+                cur_users_data = funcForWorkWithDB.getInformVK(self.new_users[mes.author.id])
+                print(cur_users_data[0], str(mes.content).split()[0])
+                if cur_users_data[0][2] == str(mes.content).split()[0]:
+                    await mes.channel.send('Ура! Это вы - ' + funcForWorkWithDB.getInformVK(self.new_users[mes.author.id])[0][1] + '?')
+                else:
+                    await mes.channel.send('Неверный пароль!')
+        try:
+            if mes.channel.name == 'bot_talking':
+                vk = vk_session.get_api()
+                vk.messages.send(chat_id=2,
+                                 message=f"""{str(mes.author)}:
+                                     {str(mes.content)}""",
+                                 random_id=random.randint(0, 2 ** 64))
+        except Exception:
+            pass
 
     async def on_member_join(self, member):
         print(member)
