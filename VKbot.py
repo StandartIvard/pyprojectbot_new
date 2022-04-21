@@ -263,3 +263,18 @@ async def waiting(longpoll, vk_session, disc):
                         attachment=attachment
                     )
 
+                elif textt == "космофото дня":
+                    img = requests.get("https://api.nasa.gov/planetary/apod?api_key=" + Nasa_api).content
+                    f = BytesIO(img)
+
+                    photo = upload.photo_messages(f)[0]
+
+                    owner_id = photo['owner_id']
+                    photo_id = photo['id']
+                    access_key = photo['access_key']
+                    attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                    vk.messages.send(
+                        random_id=random.randint(0, 2 ** 64),
+                        peer_id=event.message.peer_id,
+                        attachment=attachment
+                    )
