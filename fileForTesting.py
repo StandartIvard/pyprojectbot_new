@@ -11,6 +11,9 @@ from main import TG_bot
 import random
 import asyncio
 import messagesFile
+import datetime
+from datetime import timedelta
+import wikipedia
 
 messagesFile.init()
 
@@ -55,6 +58,19 @@ class BotsCog(commands.Cog):
     @commands.command(name='привязать')
     async def merge(self, ctx):
         pass
+
+    @commands.command(name='время')
+    async def send_time(self, ctx):
+        now = datetime.datetime.now()
+        krat = timedelta(hours=3)
+        await ctx.send(str((now + krat).strftime('%d/%m/%Y, %H:%M, %A')))
+
+    @commands.command(name='вики')
+    async def wiki(self, ctx, text):
+        try:
+            await ctx.send(wikipedia.summary(text))
+        except Exception:
+            await ctx.send('Ошибка(')
 
 
 class DiscordBot(commands.Bot):
