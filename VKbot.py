@@ -139,6 +139,60 @@ async def waiting(longpoll, vk_session, disc):
                             vk.messages.send(chat_id=event.chat_id,
                                              message="Ошибка!!!",
                                              random_id=random.randint(0, 2 ** 64))
+                    elif textt[:3] == "мем":
+                        temp = textt.replace("мем ", '')
+
+                        top = ''
+                        bot = ''
+
+                        temp = temp.split(', ')
+
+                        mem = temp[0]
+                        top = temp[1]
+                        bot = temp[2]
+
+                        print(temp)
+
+                        memes = {'1': '10-Guy', '2': '1990s-First-World-Problems',
+                                 '3': 'Aaaaand-Its-Gone', '4': '2nd-Term-Obama', '5': 'Advice-Doge',
+                                 '6': 'Albert-Einstein-1', '7': 'Am-I-The-Only-One-Around-Here'}
+
+                        if mem in memes.keys():
+                            querystring = {"top": top, "bottom": bot, "meme": memes[mem]}
+                            endpoint = "https://apimeme.com/meme"
+
+                            img = requests.get(endpoint, params=querystring).content
+                            f = BytesIO(img)
+
+                            photo = upload.photo_messages(f)[0]
+
+                            owner_id = photo['owner_id']
+                            photo_id = photo['id']
+                            access_key = photo['access_key']
+                            attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                            vk.messages.send(
+                                random_id=random.randint(0, 2 ** 64),
+                                peer_id=event.message.peer_id,
+                                attachment=attachment
+                            )
+                        else:
+                            querystring = {"top": 'Ошибка!', "bottom": 'Указанный мем не найден!!!', "meme": 'FFFFFFFUUUUUUUUUUUU'}
+                            endpoint = "https://apimeme.com/meme"
+
+                            img = requests.get(endpoint, params=querystring).content
+                            f = BytesIO(img)
+
+                            photo = upload.photo_messages(f)[0]
+
+                            owner_id = photo['owner_id']
+                            photo_id = photo['id']
+                            access_key = photo['access_key']
+                            attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                            vk.messages.send(
+                                random_id=random.randint(0, 2 ** 64),
+                                peer_id=event.message.peer_id,
+                                attachment=attachment
+                            )
 
                 if event.chat_id == 2:
                     try:
@@ -208,3 +262,4 @@ async def waiting(longpoll, vk_session, disc):
                         peer_id=event.message.peer_id,
                         attachment=attachment
                     )
+
