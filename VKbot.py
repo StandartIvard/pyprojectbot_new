@@ -10,10 +10,10 @@ import wikipedia
 import telegram
 import requests
 from io import BytesIO
-from VK import Nasa_api, GIF_api
+from VK import Nasa_api, GIF_api, IAM_TOKEN
 import messagesFile
 import json
-
+from translate import Translator
 
 regid = {}
 wikipedia.set_lang("ru")
@@ -264,7 +264,9 @@ async def waiting(longpoll, vk_session, disc):
                     )
 
                 elif textt == "космофото дня":
-                    img = requests.get("https://api.nasa.gov/planetary/apod?api_key=" + Nasa_api).content
+                    response = requests.get("https://api.nasa.gov/planetary/apod?api_key=" + Nasa_api)
+                    print()
+                    img = requests.get(response.json()["url"]).content
                     f = BytesIO(img)
 
                     photo = upload.photo_messages(f)[0]
@@ -276,5 +278,20 @@ async def waiting(longpoll, vk_session, disc):
                     vk.messages.send(
                         random_id=random.randint(0, 2 ** 64),
                         peer_id=event.message.peer_id,
-                        attachment=attachment
+                        attachment=attachment,
+                        message=response.json()["title"] + '\n' + '\n' + response.json()["explanation"]
+                    )
+
+                elif textt == "интересность о числе":
+                    response = requests.get("http://numbersapi.com/random/")
+                    print(response.text)
+
+                    translator= Translator(to_lang="ru")
+
+                    translation = translator.translate(response.text)
+
+                    vk.messages.send(
+                        random_id=random.randint(0, 2 ** 64),
+                        peer_id=event.message.peer_id,
+                        message=translation
                     )
