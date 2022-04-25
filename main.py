@@ -12,7 +12,6 @@ from VK import VKToken, TGToken
 import discord
 from discord.ext import commands
 from discord_token import TOKEN
-from discordBot import DiscordBot, BotsCog
 import threading
 from threading import Thread
 import messagesFile
