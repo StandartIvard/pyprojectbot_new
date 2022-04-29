@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-
+import requests
 import fileForWorkingWithDB
 from discord_token import TOKEN
 from VKbot import waiting
@@ -11,6 +11,8 @@ from main import TG_bot
 import random
 import asyncio
 import messagesFile
+from io import BytesIO
+from PIL import Image
 import datetime
 from datetime import timedelta
 import wikipedia
@@ -71,6 +73,32 @@ class BotsCog(commands.Cog):
             await ctx.send(wikipedia.summary(text))
         except Exception:
             await ctx.send('Ошибка(')
+
+    @commands.command(name='мем')
+    async def meme(self, ctx, *text):
+
+        temp = text
+        mem = temp[0]
+        top = temp[1]
+        bot = temp[2]
+
+        memes = {'1': '10-Guy',
+                 '2': '1990s-First-World-Problems',
+                 '3': 'Aaaaand-Its-Gone',
+                 '4': '2nd-Term-Obama',
+                 '5': 'Advice-Doge',
+                 '6': 'Albert-Einstein-1',
+                 '7': 'Am-I-The-Only-One-Around-Here'}
+        if mem in list(memes.keys()):
+            print('here')
+            querystring = {"top": top, "bottom": bot, "meme": memes[mem]}
+            endpoint = "https://apimeme.com/meme"
+
+            img = requests.get(endpoint, params=querystring).content
+            f = BytesIO(img)
+            with open('new_p.png', 'wb') as new_p:
+                new_p.write(img)
+                await ctx.send(file=discord.File('new_p.png'))
 
 class DiscordBot(commands.Bot):
     def __init__(self, *args, **kwargs):
