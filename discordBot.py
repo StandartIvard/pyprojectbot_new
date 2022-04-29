@@ -77,7 +77,8 @@ class BotsCog(commands.Cog):
     @commands.command(name='мем')
     async def meme(self, ctx, *text):
 
-        temp = text
+        tt = ' '.join(text)
+        temp = tt.split(', ')
         mem = temp[0]
         top = temp[1]
         bot = temp[2]
