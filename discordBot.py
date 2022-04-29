@@ -31,18 +31,37 @@ class BotsCog(commands.Cog):
     async def test(self, ctx):
         await ctx.send('What???')
 
-    @commands.command(name='points')
-    async def points(self, ctx):
-        await ctx.send(ctx.message.author.mention + ' у тебя ' + str(bot.users_list[str(ctx.message.author)]) + ' очков!')
-
-    @commands.command(name='repeate')
-    async def repeate_fraze(self, ctx, *text):
-        if str(bot.last_author) == str(ctx.message.author):
-            for channel in ctx.guild.text_channels:
-                if channel.name == 'bot_talking':
-                    await channel.send('(' + str(ctx.author) + '): ' + ' '.join(text))
-
     @commands.command(name='give_id')
+    async def give_id(self, ctx):
+        await bot.give_id(ctx)
+
+    @commands.command(name='info')
+    async def info(self, ctx):
+        await bot.info(ctx)
+
+    @commands.command(name='привязать')
+    async def merge(self, ctx):
+        pass
+
+    @commands.command(name='время')
+    async def time(self, ctx):
+        await bot.send_time(ctx)
+
+    @commands.command(name='вики')
+    async def wiki(self, ctx, text):
+        await bot.wiki(ctx, text)
+
+    @commands.command(name='мем')
+    async def meme(self, ctx, *text):
+        await bot.meme(ctx, *text)
+
+class DiscordBot(commands.Bot):
+    def __init__(self, *args, **kwargs):
+        self.users_list = {}
+        self.last_author = ''
+        super().__init__(*args, **kwargs)
+        self.new_users = {}
+
     async def give_id(self, ctx):
         for member in bot.users_list.keys():
             if str(member) == ' '.join(ctx.message.content.split()[1:]):
@@ -52,29 +71,21 @@ class BotsCog(commands.Cog):
         except Exception:
             await ctx.send('Пользователь не найден(')
 
-    @commands.command(name='info')
     async def info(self, ctx):
         await ctx.send('Список команд:\n!give_id <имя пользователя> - id пользователя\n'
                        '!repeate <текст> - повторить текст\nСкоро команд будет больше.')
 
-    @commands.command(name='привязать')
-    async def merge(self, ctx):
-        pass
-
-    @commands.command(name='время')
     async def send_time(self, ctx):
         now = datetime.datetime.now()
         krat = timedelta(hours=3)
         await ctx.send(str((now + krat).strftime('%d/%m/%Y, %H:%M, %A')))
 
-    @commands.command(name='вики')
     async def wiki(self, ctx, text):
         try:
             await ctx.send(wikipedia.summary(text))
         except Exception:
             await ctx.send('Ошибка(')
 
-    @commands.command(name='мем')
     async def meme(self, ctx, *text):
 
         tt = ' '.join(text)
@@ -100,13 +111,6 @@ class BotsCog(commands.Cog):
             with open('new_p.png', 'wb') as new_p:
                 new_p.write(img)
                 await ctx.send(file=discord.File('new_p.png'))
-
-class DiscordBot(commands.Bot):
-    def __init__(self, *args, **kwargs):
-        self.users_list = {}
-        self.last_author = ''
-        super().__init__(*args, **kwargs)
-        self.new_users = {}
 
     async def send_on_timer(self, channel_name, messages_list):
         await asyncio.sleep(0.01)
@@ -138,6 +142,7 @@ class DiscordBot(commands.Bot):
         if mes.author not in self.users_list:
             self.users_list[mes.author] = 0
         self.users_list[mes.author] += 1
+        await self.cogs.repeate_fraze(mes.channel, *mes.content.split(''))
         if mes.content.startswith('!'):
             await self.process_commands(mes)
         self.last_author = mes.author
@@ -187,6 +192,7 @@ class DiscordBot(commands.Bot):
 
 bot = DiscordBot(command_prefix='!')
 bot.add_cog(BotsCog(bot))
+bot.co
 bot.loop.create_task(bot.send_on_timer('bot_talking', messagesFile.vk_messages))
 
 loop = asyncio.get_event_loop()
