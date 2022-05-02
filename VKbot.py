@@ -3,7 +3,7 @@ from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
 import datetime
 from datetime import timedelta
-from funcForWorkWithDB import insertVK, VKpass, getInformVK
+from fileForWorkingWithDB import insertVK, VKpass, getInformVK
 from vk_api.upload import VkUpload
 import asyncio
 import wikipedia
