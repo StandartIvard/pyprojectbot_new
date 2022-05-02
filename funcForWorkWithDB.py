@@ -32,12 +32,27 @@ def VKpass(password, id):
     con.commit()
 
 
+def getInformTG(id):
+    con = sqlite3.connect('DBuser.db')
+    cur = con.cursor()
+    print(str(id))
+    return cur.execute("SELECT * FROM users WHERE tgid = '" + str(id) + "';").fetchall()
+
+
+def TGid(tgid, id):
+    con = sqlite3.connect('DBuser.db')
+    cur = con.cursor()
+    cur.execute("UPDATE users SET tgid = '" + str(tgid) + "' WHERE vkid = '" + str(id) + "';")
+    con.commit()
+
+
 def SetPassword(name, password):
     con = sqlite3.connect('DBuser.db')
     cur = con.cursor()
     p = password.hexdigest()
     cur.execute("UPDATE users SET password = '" + str(p) + "' WHERE name = '" + name + "';")
     con.commit()
+
 
 con = sqlite3.connect('DBuser.db')
 cur = con.cursor()

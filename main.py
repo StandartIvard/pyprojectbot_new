@@ -6,9 +6,12 @@ from telegram.ext import CallbackContext, CommandHandler, ConversationHandler
 import asyncio
 from telegram.ext import CommandHandler
 import random
+import requests
 import hashlib
+from funcForWorkWithDB import getInformVK, TGid, getInformTG
 from VKbot import waiting
-from VK import VKToken, TGToken
+from VK import VKToken, TGToken, GIF_api
+import telebot
 import discord
 from discord.ext import commands
 from discord_token import TOKEN
@@ -16,13 +19,22 @@ from discordBot import DiscordBot, BotsCog
 import threading
 from threading import Thread
 import messagesFile
+from io import BytesIO
+from vk_api.upload import VkUpload
+
+
+
+registrating = {}
 
 
 vk_session = vk_api.VkApi(token=VKToken)
+bot = telebot.TeleBot(TGToken)
 
 
-async def TG_bot(bot):
+async def TG_bot():
     longpoll = VkBotLongPoll(vk_session, "198062715")
+
+    '''
     updater = Updater(TGToken, use_context=True)
     dp = updater.dispatcher
     text_handler = MessageHandler(Filters.text, echo)
@@ -39,6 +51,8 @@ async def TG_bot(bot):
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("id", id))
     dp.add_handler(text_handler)
+    
+    '''
 
     #thread1 = Thread(target=lambda: tgwaiting(updater))
     #thread2 = Thread(target=lambda: waiting(longpoll, vk_session, bot))
@@ -46,7 +60,7 @@ async def TG_bot(bot):
     #thread1.start()
     #thread2.start()
 
-    Thread(target=tgwaiting, args=(updater,), daemon=True).start()
+    Thread(target=tgwaiting, daemon=True).start()
     ##wrapper(longpoll, vk_session, bot)
     Thread(target=wrapper, args=(longpoll, vk_session, bot), daemon=True).start()
     ##await waiting(longpoll, vk_session, bot)
@@ -79,9 +93,117 @@ def wrapper(longpoll, vk_session, bot):
 
 ######################################################
 
+def tgwaiting():
+    bot.polling(none_stop=True, interval=0)
 
-def tgwaiting(updater):
-    updater.start_polling()
+
+@bot.message_handler(commands=['connect'])
+def con(message):
+    print("command connect")
+    if message.chat.type == "private" and message.chat.id not in registrating.keys():
+        try:
+            req = getInformTG(message.from_user.id)
+            print(message.from_user.id)
+            print(req)
+            bot.send_message(message.chat.id, f"Нет, {req[0][1]}, вы уже зарегистрированы")
+        except Exception as e:
+            print(e)
+            registrating[message.chat.id] = ["id"]
+            bot.send_message(message.chat.id, "Введите ваш VKid. Его вы можете получить в личных сообщениях нашего VK бота написав 'хочу узнать id'")
+    else:
+        bot.send_message(message.chat.id, "Осуществить привязку можно только в личных сообщениях t.me/CallMe_SanyaBot")
+
+
+@bot.message_handler(content_types=['text'])
+def get_text_messages(message):
+    if message.chat.id not in registrating.keys():
+        print("not in keys")
+        vk = vk_session.get_api()
+        upload = VkUpload(vk)
+        textt = message.text.lower()
+
+        if message.chat.id == -400828697:
+            try:
+                req = getInformTG(message.from_user.id)
+                print(req[0][1])
+                # await disc.send_in_chat(event.obj.message['text'], req[0][1])
+                messagesFile.discord_messages.append((message.text, req[0][1]))
+                vk.messages.send(peer_id=2000000002,
+                                 message=f"""{req[0][1]}:
+                                                 {message.text}""",
+                                 random_id=random.randint(0, 2 ** 64))
+            except Exception as e:
+                print(e)
+
+                vk.messages.send(peer_id=2000000002,
+                             message=f"""{message.from_user.username}:
+                                 {message.text}""",
+                             random_id=random.randint(0, 2 ** 64))
+                messagesFile.discord_messages.append((message.text, message.from_user.username))
+        if textt[:10] == "хочу гифку":
+            textt = textt.replace("хочу гифку", "")
+            endpoint = "https://g.tenor.com/v1/random"
+            query_params = {"key": GIF_api}
+            if textt.strip() != "":
+                textt = textt.strip()
+                query_params["q"] = textt
+
+            response = requests.get(endpoint, params=query_params).json()
+            print(response)
+            bot.send_video(-400828697, response["results"][0]["media"][0]["gif"]["url"])
+        if ("котик" in textt) or ("котейка" in textt):
+            imgURL = requests.get("https://aws.random.cat/meow")
+            print(imgURL)
+            data = imgURL.text
+            print(data)
+            print("REAGY")
+            img = requests.get(imgURL.json()["file"]).content
+            bot.send_message(message.chat.id, 'Кто-то сказал "котик"?')
+            bot.send_photo(message.chat.id, img)
+            if message.chat.id == -400828697:
+                f = BytesIO(img)
+
+                photo = upload.photo_messages(f)[0]
+
+                owner_id = photo['owner_id']
+                photo_id = photo['id']
+                access_key = photo['access_key']
+                attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                vk.messages.send(
+                    random_id=random.randint(0, 2 ** 64),
+                    peer_id=2000000002,
+                    message='Кто-то сказал "котик"?'
+                )
+                vk.messages.send(
+                    random_id=random.randint(0, 2 ** 64),
+                    peer_id=2000000002,
+                    attachment=attachment
+                )
+    else:
+        print("in keys")
+        if registrating[message.chat.id][0] == "id":
+            try:
+                res = getInformVK(message.text)
+                print(res[0][0])
+                bot.send_message(message.chat.id, "Хорошо! Теперь введите пароль, заданный при регистрации в VK")
+                registrating[message.chat.id].append(message.text)
+                registrating[message.chat.id][0] = "password"
+            except Exception as e:
+                bot.send_message(message.chat.id,
+                                    "Произошло ошибка! Такого id не найдено, проверьте введённые данные.")
+        elif registrating[message.chat.id][0] == "password":
+            res = getInformVK(registrating[message.chat.id][1])
+            password = hashlib.md5(bytes(message.text, encoding='utf8'))
+            p = password.hexdigest()
+            if res[0][2] == str(p):
+                bot.send_message(message.chat.id, "Привязка прошла успешно! Спасибо что выбрали нашего бота!")
+                TGid(message.from_user.id, registrating[message.chat.id][1])
+            else:
+                bot.send_message(message.chat.id, "Пароль не верен, проверьте введённые данные.")
+
+
+
+'''
 
 
 def echo(update, context):
@@ -127,6 +249,8 @@ def first(update, context):
                      message="Чтобы подтвердить привязку аккаунта к Telegram, введите ваш пароль.",
                      random_id=random.randint(0, 2 ** 64))
 
+
+'''
 
 #################################################
 

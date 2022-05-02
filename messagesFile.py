@@ -1,3 +1,3 @@
 def init():
-    global vk_messages
-    vk_messages = list()
+    global discord_messages
+    discord_messages = list()

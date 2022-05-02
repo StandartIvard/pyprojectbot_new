@@ -102,7 +102,7 @@ class DiscordBot(commands.Bot):
             for chat in guild.text_channels:
                 if chat.name == 'bot_talking':
                     self.crosschat = chat
-        await TG_bot(self)
+        await TG_bot()
 
     async def on_message(self, mes):
         if mes.author == self.user:
@@ -159,7 +159,7 @@ class DiscordBot(commands.Bot):
 
 bot = DiscordBot(command_prefix='!')
 bot.add_cog(BotsCog(bot))
-bot.loop.create_task(bot.send_on_timer('bot_talking', messagesFile.vk_messages))
+bot.loop.create_task(bot.send_on_timer('bot_talking', messagesFile.discord_messages))
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(bot.run(TOKEN))
