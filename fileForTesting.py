@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-import funcForWorkWithDB
+import fileForWorkingWithDB
 from discord_token import TOKEN
 from VKbot import waiting
 import vk_api

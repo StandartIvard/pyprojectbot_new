@@ -8,7 +8,7 @@ from telegram.ext import CommandHandler
 import random
 import requests
 import hashlib
-from funcForWorkWithDB import getInformVK, TGid, getInformTG
+from fileForWorkingWithDB import getInformVK, TGid, getInformTG
 from VKbot import waiting
 from VK import VKToken, TGToken, GIF_api
 import telebot
