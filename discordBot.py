@@ -142,7 +142,6 @@ class DiscordBot(commands.Bot):
         if mes.author not in self.users_list:
             self.users_list[mes.author] = 0
         self.users_list[mes.author] += 1
-        await self.cogs.repeate_fraze(mes.channel, *mes.content.split(''))
         if mes.content.startswith('!'):
             await self.process_commands(mes)
         self.last_author = mes.author
@@ -192,7 +191,7 @@ class DiscordBot(commands.Bot):
 
 bot = DiscordBot(command_prefix='!')
 bot.add_cog(BotsCog(bot))
-bot.co
+
 bot.loop.create_task(bot.send_on_timer('bot_talking', messagesFile.vk_messages))
 
 loop = asyncio.get_event_loop()
