@@ -192,6 +192,14 @@ class DiscordBot(commands.Bot):
         if mes.author not in self.users_list:
             self.users_list[mes.author] = 0
         self.users_list[mes.author] += 1
+        try:
+            if mes.channel.name == 'bot_talking':
+                self.vk.messages.send(chat_id=2,
+                                 message=f"""{str(mes.author)}:
+                                     {str(mes.content)}""",
+                                 random_id=random.randint(0, 2 ** 64))
+        except Exception:
+            pass
         if mes.content.startswith('!'):
             await self.process_commands(mes)
         self.last_author = mes.author
@@ -216,14 +224,6 @@ class DiscordBot(commands.Bot):
                     fileForWorkingWithDB.SetDiscord(cur_users_data[0][1], str(mes.author.id))
                 else:
                     await mes.channel.send('Неверный пароль!')
-        try:
-            if mes.channel.name == 'bot_talking':
-                self.vk.messages.send(chat_id=2,
-                                 message=f"""{str(mes.author)}:
-                                     {str(mes.content)}""",
-                                 random_id=random.randint(0, 2 ** 64))
-        except Exception:
-            pass
 
     async def on_member_join(self, member):
         print(member)
