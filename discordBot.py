@@ -17,6 +17,7 @@ from PIL import Image
 import datetime
 from datetime import timedelta
 import wikipedia
+from main import TGbot
 
 messagesFile.init()
 
@@ -167,7 +168,10 @@ class DiscordBot(commands.Bot):
                 if channel_name == channel.name:
                     cur_id = channel.id
         if len(messages_list) > 0:
-            await self.get_channel(cur_id).send('(' + messages_list[0][1] + '): ' + messages_list[0][0])
+            if len(messages_list[0]) == 2:
+                await self.get_channel(cur_id).send('(' + messages_list[0][1] + '): ' + messages_list[0][0])
+            elif len(messages_list[0]) == 1:
+                await self.get_channel(cur_id).send(messages_list[0][0])
             messages_list.pop(0)
         self.loop.create_task(self.send_on_timer(channel_name, messages_list))
 
@@ -184,7 +188,7 @@ class DiscordBot(commands.Bot):
             for chat in guild.text_channels:
                 if chat.name == 'bot_talking':
                     self.crosschat = chat
-        await TG_bot()
+        await TG_bot(self)
 
     async def on_message(self, mes):
         if mes.author == self.user:
@@ -198,6 +202,7 @@ class DiscordBot(commands.Bot):
                                  message=f"""{str(mes.author)}:
                                      {str(mes.content)}""",
                                  random_id=random.randint(0, 2 ** 64))
+                TGbot.send_message(-400828697, str(mes.author) + ": " + str(mes.content))
         except Exception:
             pass
         if mes.content.startswith('!'):

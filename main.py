@@ -30,20 +30,20 @@ registrating = {}
 
 
 vk_session = vk_api.VkApi(token=VKToken)
-bot = telebot.TeleBot(TGToken)
+TGbot = telebot.TeleBot(TGToken)
 
 
-async def TG_bot():
+async def TG_bot(disc):                                                       #TG and VK starting func
     longpoll = VkBotLongPoll(vk_session, "198062715")
 
     Thread(target=tgwaiting, daemon=True).start()
-    Thread(target=wrapper, args=(longpoll, vk_session, bot), daemon=True).start()
+    Thread(target=wrapper, args=(longpoll, vk_session, TGbot, disc), daemon=True).start()
     print("okлллл")
 
 
-def wrapper(longpoll, vk_session, bot):
+def wrapper(longpoll, vk_session, bot, disc):
     loop = asyncio.new_event_loop()
-    loop.run_until_complete(waiting(longpoll, vk_session, bot))
+    loop.run_until_complete(waiting(longpoll, vk_session, bot, disc))
     loop.close()
 
 
@@ -54,10 +54,10 @@ def wrapper(longpoll, vk_session, bot):
 ######################################################
 
 def tgwaiting():
-    bot.polling(none_stop=True, interval=0)
+    TGbot.polling(none_stop=True, interval=0)
 
 
-@bot.message_handler(commands=['connect'])
+@TGbot.message_handler(commands=['connect'])
 def con(message):
     print("command connect")
     if message.chat.type == "private" and message.chat.id not in registrating.keys():
@@ -65,18 +65,23 @@ def con(message):
             req = getInformTG(message.from_user.id)
             print(message.from_user.id)
             print(req)
-            bot.send_message(message.chat.id, f"Нет, {req[0][1]}, вы уже зарегистрированы")
+            TGbot.send_message(message.chat.id, f"Нет, {req[0][1]}, вы уже зарегистрированы")
         except Exception as e:
             print(e)
             registrating[message.chat.id] = ["id"]
-            bot.send_message(message.chat.id, "Введите ваш VKid. Его вы можете получить в личных сообщениях нашего VK бота написав 'хочу узнать id'")
+            TGbot.send_message(message.chat.id, "Введите ваш VKid. Его вы можете получить в личных сообщениях нашего VK бота написав 'хочу узнать id'")
     else:
-        bot.send_message(message.chat.id, "Осуществить привязку можно только в личных сообщениях t.me/CallMe_SanyaBot")
+        TGbot.send_message(message.chat.id, "Осуществить привязку можно только в личных сообщениях t.me/CallMe_SanyaBot")
 
 
-@bot.message_handler(content_types=['text'])
+#@TGbot.message_handler(commands=['help'])
+#def help
+
+
+
+@TGbot.message_handler(content_types=['text'])
 def get_text_messages(message):
-    global bot
+    global TGbot
     if message.chat.id not in registrating.keys():
         print("not in keys")
         vk = vk_session.get_api()
@@ -111,7 +116,7 @@ def get_text_messages(message):
 
             response = requests.get(endpoint, params=query_params).json()
             print(response)
-            bot.send_video(-400828697, response["results"][0]["media"][0]["gif"]["url"])
+            TGbot.send_video(-400828697, response["results"][0]["media"][0]["gif"]["url"])
         elif ("котик" in textt) or ("котейка" in textt):
             imgURL = requests.get("https://aws.random.cat/meow")
             print(imgURL)
@@ -119,8 +124,8 @@ def get_text_messages(message):
             print(data)
             print("REAGY")
             img = requests.get(imgURL.json()["file"]).content
-            bot.send_message(message.chat.id, 'Кто-то сказал "котик"?')
-            bot.send_photo(message.chat.id, img)
+            TGbot.send_message(message.chat.id, 'Кто-то сказал "котик"?')
+            TGbot.send_photo(message.chat.id, img)
             if message.chat.id == -400828697:
                 f = BytesIO(img)
 
@@ -147,21 +152,21 @@ def get_text_messages(message):
                 vk.messages.send(peer_id=2000000002,
                                  message=(now + krat).strftime('%d/%m/%Y, %H:%M, %A'),
                                  random_id=random.randint(0, 2 ** 64))
-            bot.send_message(-400828697, (now + krat).strftime('%d/%m/%Y, %H:%M, %A'))
+            TGbot.send_message(-400828697, (now + krat).strftime('%d/%m/%Y, %H:%M, %A'))
         elif textt[:4] == "вики":
             try:
                 if message.chat.id == -400828697:
                     vk.messages.send(peer_id=2000000002,
                                      message=wikipedia.summary(textt[5:]),
                                      random_id=random.randint(0, 2 ** 64))
-                bot.send_message(-400828697, wikipedia.summary(textt[5:]))
+                TGbot.send_message(-400828697, wikipedia.summary(textt[5:]))
             except Exception as e:
                 print(e)
                 if message.chat.id == -400828697:
                     vk.messages.send(peer_id=2000000002,
                                      message="Ошибка!!!",
                                      random_id=random.randint(0, 2 ** 64))
-                bot.send_message(-400828697, "Ошибка!!!")
+                TGbot.send_message(-400828697, "Ошибка!!!")
         elif textt[:3] == "мем":
             temp = textt.replace("мем ", '')
 
@@ -246,7 +251,7 @@ def get_text_messages(message):
                         peer_id=2000000002,
                         attachment=attachment
                     )
-                bot.send_photo(-400828697, img)
+                TGbot.send_photo(-400828697, img)
             print("Ended")
         elif "фото стандарт" == textt:
             endpoint = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos"
@@ -273,7 +278,7 @@ def get_text_messages(message):
                         peer_id=2000000002,
                         attachment=attachment
                     )
-                bot.send_photo(-400828697, img)
+                TGbot.send_photo(-400828697, img)
             print("Ended")
         elif textt == "космофото дня":
             response = requests.get("https://api.nasa.gov/planetary/apod?api_key=" + Nasa_api)
@@ -294,7 +299,8 @@ def get_text_messages(message):
                     attachment=attachment,
                     message=response.json()["title"] + '\n' + '\n' + response.json()["explanation"]
                 )
-            bot.send_photo(-400828697, img)
+            TGbot.send_message(-400828697, response.json()["title"] + '\n' + '\n' + response.json()["explanation"])
+            TGbot.send_photo(-400828697, img)
         elif textt == "интересность о числе":
             response = requests.get("http://numbersapi.com/random/")
             print(response.text)
@@ -308,7 +314,7 @@ def get_text_messages(message):
                     peer_id=2000000002,
                     message=translation
                 )
-            bot.send_message(-400828697, translation)
+            TGbot.send_message(-400828697, translation)
 
         elif textt[:20] == "интересность о числе":
             textt = textt.replace("интересность о числе ", '')
@@ -327,27 +333,26 @@ def get_text_messages(message):
                         peer_id=2000000002,
                         message=translation
                     )
-                bot.send_message(-400828697, translation)
+                TGbot.send_message(-400828697, translation)
             except Exception as e:
-                bot.send_message(-400828697, e)
+                TGbot.send_message(-400828697, e)
     else:
         print("in keys")
         if registrating[message.chat.id][0] == "id":
             try:
                 res = getInformVK(message.text)
                 print(res[0][0])
-                bot.send_message(message.chat.id, "Хорошо! Теперь введите пароль, заданный при регистрации в VK")
+                TGbot.send_message(message.chat.id, "Хорошо! Теперь введите пароль, заданный при регистрации в VK")
                 registrating[message.chat.id].append(message.text)
                 registrating[message.chat.id][0] = "password"
             except Exception as e:
-                bot.send_message(message.chat.id,
-                                    "Произошла ошибка! Такого id не найдено, проверьте введённые данные.")
+                TGbot.send_message(message.chat.id, "Произошла ошибка! Такого id не найдено, проверьте введённые данные.")
         elif registrating[message.chat.id][0] == "password":
             res = getInformVK(registrating[message.chat.id][1])
             password = hashlib.md5(bytes(message.text, encoding='utf8'))
             p = password.hexdigest()
             if res[0][2] == str(p):
-                bot.send_message(message.chat.id, "Привязка прошла успешно! Спасибо что выбрали нашего бота!")
+                TGbot.send_message(message.chat.id, "Привязка прошла успешно! Спасибо что выбрали нашего бота!")
                 TGid(message.from_user.id, registrating[message.chat.id][1])
             else:
-                bot.send_message(message.chat.id, "Пароль не верен, проверьте введённые данные.")
+                TGbot.send_message(message.chat.id, "Пароль не верен, проверьте введённые данные.")
