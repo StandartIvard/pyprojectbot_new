@@ -107,7 +107,6 @@ class DiscordBot(commands.Bot):
             endpoint = "https://apimeme.com/meme"
 
             img = requests.get(endpoint, params=querystring).content
-            f = BytesIO(img)
             with open('new_p.png', 'wb') as new_p:
                 new_p.write(img)
                 await ctx.send(file=discord.File('new_p.png'))
@@ -187,6 +186,12 @@ class DiscordBot(commands.Bot):
             for channel in guild.text_channels:
                 if channel.name == 'общий':
                     return str(channel.create_invite())
+
+    async def send_photo(self, url):
+        img = requests.get(url).content
+        with open('new_p.png', 'wb') as new_p:
+            new_p.write(img)
+            await self.crosschat.send(file=discord.File('new_p.png'))
 
 
 bot = DiscordBot(command_prefix='!')
