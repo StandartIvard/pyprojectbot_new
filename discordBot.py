@@ -4,6 +4,7 @@ import requests
 import fileForWorkingWithDB
 from discord_token import TOKEN
 from VKbot import waiting
+from vk_api.upload import VkUpload
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from VK import VKToken, TGToken
@@ -70,21 +71,56 @@ class DiscordBot(commands.Bot):
             await ctx.send(str(target.id))
         except Exception:
             await ctx.send('Пользователь не найден(')
+        try:
+            if ctx.channel.name != self.crosschat.name:
+                raise Exception
+            self.vk.messages.send(chat_id=2,
+                                 message=f"""{str(target.id)}""",
+                                 random_id=random.randint(0, 2 ** 64))
+        except Exception:
+            self.vk.messages.send(chat_id=2,
+                                 message="Пользователь не найден(",
+                                 random_id=random.randint(0, 2 ** 64))
 
     async def info(self, ctx):
-        await ctx.send('Список команд:\n!give_id <имя пользователя> - id пользователя\n'
-                       '!repeate <текст> - повторить текст\nСкоро команд будет больше.')
+        mes = 'Список команд:\n!give_id <имя пользователя> - id пользователя\n' \
+              '!repeate <текст> - повторить текст\nСкоро команд будет больше.'
+        await ctx.send(mes)
+        try:
+            if ctx.channel.name != self.crosschat.name:
+                raise Exception
+            self.vk.messages.send(chat_id=2,
+                                 message=f"""{mes}""",
+                                 random_id=random.randint(0, 2 ** 64))
+        except Exception:
+            pass
 
     async def send_time(self, ctx):
         now = datetime.datetime.now()
         krat = timedelta(hours=3)
         await ctx.send(str((now + krat).strftime('%d/%m/%Y, %H:%M, %A')))
+        try:
+            if ctx.channel.name != self.crosschat.name:
+                raise Exception
+            self.vk.messages.send(chat_id=2,
+                                 message=f"""{str((now + krat).strftime('%d/%m/%Y, %H:%M, %A'))}""",
+                                 random_id=random.randint(0, 2 ** 64))
+        except Exception:
+            pass
 
     async def wiki(self, ctx, text):
         try:
             await ctx.send(wikipedia.summary(text))
         except Exception:
             await ctx.send('Ошибка(')
+        try:
+            if ctx.channel.name != self.crosschat.name:
+                raise Exception
+            self.vk.messages.send(chat_id=2,
+                                 message=f"""{wikipedia.summary(text)}""",
+                                 random_id=random.randint(0, 2 ** 64))
+        except Exception:
+            pass
 
     async def meme(self, ctx, *text):
 
@@ -110,6 +146,19 @@ class DiscordBot(commands.Bot):
             with open('new_p.png', 'wb') as new_p:
                 new_p.write(img)
                 await ctx.send(file=discord.File('new_p.png'))
+                f = BytesIO(img)
+
+                photo = self.upload.photo_messages(f)[0]
+
+                owner_id = photo['owner_id']
+                photo_id = photo['id']
+                access_key = photo['access_key']
+                attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                self.vk.messages.send(
+                random_id=random.randint(0, 2 ** 64),
+                peer_id=2000000002,
+                attachment=attachment
+                )
 
     async def send_on_timer(self, channel_name, messages_list):
         await asyncio.sleep(0.01)
@@ -123,6 +172,8 @@ class DiscordBot(commands.Bot):
         self.loop.create_task(self.send_on_timer(channel_name, messages_list))
 
     async def on_ready(self):
+        self.vk = vk_session.get_api()
+        self.upload = VkUpload(self.vk)
         for g in self.guilds:
             for c in g.text_channels:
                 await c.send('here i am')
@@ -133,7 +184,7 @@ class DiscordBot(commands.Bot):
             for chat in guild.text_channels:
                 if chat.name == 'bot_talking':
                     self.crosschat = chat
-        await TG_bot(self)
+        await TG_bot()
 
     async def on_message(self, mes):
         if mes.author == self.user:
@@ -167,8 +218,7 @@ class DiscordBot(commands.Bot):
                     await mes.channel.send('Неверный пароль!')
         try:
             if mes.channel.name == 'bot_talking':
-                vk = vk_session.get_api()
-                vk.messages.send(chat_id=2,
+                self.vk.messages.send(chat_id=2,
                                  message=f"""{str(mes.author)}:
                                      {str(mes.content)}""",
                                  random_id=random.randint(0, 2 ** 64))
@@ -197,7 +247,7 @@ class DiscordBot(commands.Bot):
 bot = DiscordBot(command_prefix='!')
 bot.add_cog(BotsCog(bot))
 
-bot.loop.create_task(bot.send_on_timer('bot_talking', messagesFile.vk_messages))
+bot.loop.create_task(bot.send_on_timer('bot_talking', messagesFile.discord_messages))
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(bot.run(TOKEN))
