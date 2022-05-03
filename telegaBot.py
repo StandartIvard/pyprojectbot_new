@@ -1,23 +1,21 @@
 from telegram.ext import Updater, MessageHandler, Filters
 from telegram.ext import CallbackContext, CommandHandler
+import telebot
+from VK import TGToken
 
 
-def echo(update, context):
-    update.message.reply_text(update.message.text)
+
+bot = telebot.TeleBot(TGToken)
 
 
-def main():
-    updater = Updater("5153379485:AAHsOGBUilYA9gkwCfClzswlVc4BQeDhipo", use_context=True)
-
-    dp = updater.dispatcher
-
-    text_handler = MessageHandler(Filters.text, echo)
-
-    dp.add_handler(text_handler)
-    updater.start_polling()
-
-    updater.idle()
+@bot.message_handler(content_types=['text'])
+def get_text_messages(message):
+    if message.text == "Привет":
+        bot.send_message(message.from_user.id, "Привет, чем я могу тебе помочь?")
+    elif message.text == "/help":
+        bot.send_message(message.from_user.id, "Напиши привет")
+    else:
+        bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
 
 
-if __name__ == '__main__':
-    main()
+bot.polling(none_stop=True, interval=0)
