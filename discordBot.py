@@ -246,7 +246,7 @@ class DiscordBot(commands.Bot):
                 password = hashlib.md5(bytes(mes.content, encoding='utf8'))
                 p = password.hexdigest()
                 if cur_users_data[0][2] == str(p):
-                    await mes.channel.send('Ура! Это вы - ' + fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])[0][1] + '?')
+                    await mes.channel.send('Ура! Теперь вы - ' + fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])[0][1] + '!')
                     fileForWorkingWithDB.SetDiscord(cur_users_data[0][1], str(mes.author.id))
                 else:
                     await mes.channel.send('Неверный пароль!')
