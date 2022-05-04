@@ -199,35 +199,35 @@ class DiscordBot(commands.Bot):
             self.users_list[mes.author] = 0
         self.users_list[mes.author] += 1
         try:
-            if mes.channel.name == 'bot_talking':
-                for att in mes.attachments:
-                    temp = att
-                    await temp.save("""new_p.png""")
-                with open('new_p.png', 'rb') as new_p:
-                    img = new_p.read()
-                f = BytesIO(img)
-                photo = self.upload.photo_messages(f)[0]
-                owner_id = photo['owner_id']
-                photo_id = photo['id']
-                access_key = photo['access_key']
-                attachments = f'photo{owner_id}_{photo_id}_{access_key}'
-                self.vk.messages.send(chat_id=2,
+            try:
+                if mes.channel.name == 'bot_talking':
+                    for att in mes.attachments:
+                        temp = att
+                        await temp.save("""new_p.png""")
+                    with open('new_p.png', 'rb') as new_p:
+                        img = new_p.read()
+                    f = BytesIO(img)
+                    photo = self.upload.photo_messages(f)[0]
+                    owner_id = photo['owner_id']
+                    photo_id = photo['id']
+                    access_key = photo['access_key']
+                    attachments = f'photo{owner_id}_{photo_id}_{access_key}'
+                    self.vk.messages.send(chat_id=2,
+                                              message=f"""{str(mes.author)}:
+                                              {str(mes.content)}""",
+                                              random_id=random.randint(0, 2 ** 64),
+                                              attachment=attachments)
+                    TGbot.send_message(-400828697, str(mes.author) + ": " + str(mes.content))
+            except Exception:
+                if mes.channel.name == 'bot_talking':
+                    self.vk.messages.send(chat_id=2,
                                           message=f"""{str(mes.author)}:
-                                          {str(mes.content)}""",
-                                          random_id=random.randint(0, 2 ** 64),
-                                          attachment=attachments)
-                TGbot.send_message(-400828697, str(mes.author) + ": " + str(mes.content))
-        except Exception:
-            if mes.channel.name == 'bot_talking':
-                self.vk.messages.send(chat_id=2,
-                                      message=f"""{str(mes.author)}:
-                                                  {str(mes.content)}""",
-                                      random_id=random.randint(0, 2 ** 64),)
-                TGbot.send_message(-400828697, str(mes.author) + ": " + str(mes.content))
-        if mes.content.startswith('!'):
-            await self.process_commands(mes)
-        self.last_author = mes.author
-        try:
+                                                      {str(mes.content)}""",
+                                          random_id=random.randint(0, 2 ** 64),)
+                    TGbot.send_message(-400828697, str(mes.author) + ": " + str(mes.content))
+            if mes.content.startswith('!'):
+                await self.process_commands(mes)
+            self.last_author = mes.author
             if mes.channel.name != 'bot_talking':
                 return
         except AttributeError:
