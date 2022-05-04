@@ -241,15 +241,18 @@ class DiscordBot(commands.Bot):
                     await mes.channel.send('Введите пароль, который вы получили у ботов других соц. сетей. Если вы потеряли пароль, напишите ... чтобы мы вам его напомнили.')
                 except Exception:
                     await mes.channel.send('Что-то пошло не так, возможно вы ввели лишние символы или ещё как-то ошиблись в форме.')
-            elif mes.author.id in self.new_users and self.new_users[mes.author.id] != -1:
+            elif mes.author.id in self.new_users and self.new_users[mes.author.id] > -1:
                 cur_users_data = fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])
                 password = hashlib.md5(bytes(mes.content, encoding='utf8'))
                 p = password.hexdigest()
                 if cur_users_data[0][2] == str(p):
                     await mes.channel.send('Ура! Теперь вы - ' + fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])[0][1] + '!')
                     fileForWorkingWithDB.SetDiscord(cur_users_data[0][1], str(mes.author.id))
+                    self.new_users[mes.author.id] = 0
                 else:
                     await mes.channel.send('Неверный пароль!')
+            elif mes.author.id in self.new_users and self.new_users[mes.author.id] == 0:
+                await mes.channel.send('Вы уже зарегистрировались! Мне вам больше нечего сказать(')
 
     async def on_member_join(self, member):
         print(member)
