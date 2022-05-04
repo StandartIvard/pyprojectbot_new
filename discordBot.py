@@ -244,7 +244,7 @@ class DiscordBot(commands.Bot):
                     await mes.channel.send('Введите пароль, который вы получили у ботов других соц. сетей. Если вы потеряли пароль, напишите ... чтобы мы вам его напомнили.')
                 except Exception:
                     await mes.channel.send('Что-то пошло не так, возможно вы ввели лишние символы или ещё как-то ошиблись в форме.')
-            elif mes.author.id in self.new_users and self.new_users[mes.author.id] > -1:
+            elif mes.author.id in self.new_users and self.new_users[mes.author.id] > 0:
                 cur_users_data = fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])
                 password = hashlib.md5(bytes(mes.content, encoding='utf8'))
                 p = password.hexdigest()
