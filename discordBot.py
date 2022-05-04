@@ -191,6 +191,9 @@ class DiscordBot(commands.Bot):
             for chat in guild.text_channels:
                 if chat.name == 'bot_talking':
                     self.crosschat = chat
+        for key in self.new_users:
+            if self.new_users[key] > 0:
+                self.new_users[key] = 0
         await TG_bot(self)
 
     async def on_message(self, mes):
