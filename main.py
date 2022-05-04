@@ -24,6 +24,7 @@ from io import BytesIO
 from vk_api.upload import VkUpload
 import wikipedia
 from translate import Translator
+import json
 
 
 registrating = {}
@@ -93,6 +94,30 @@ def help(message):
     """)
 
 
+@TGbot.message_handler(content_types=['photo'])             # Переброска фотографий из TG
+def get_photo_message(message):
+    vk = vk_session.get_api()
+    upload = VkUpload(vk)
+    print(message.json["photo"][0])
+    photo_id = message.json["photo"][0]["file_id"]
+    imgURL = TGbot.get_file(photo_id)
+    img = requests.get(f'http://api.telegram.org/file/bot{TGToken}/{imgURL.file_path}', imgURL.file_path).content
+    f = BytesIO(img)
+
+    photo = upload.photo_messages(f)[0]
+
+    owner_id = photo['owner_id']
+    photo_id = photo['id']
+    access_key = photo['access_key']
+    attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+    vk.messages.send(
+        random_id=random.randint(0, 2 ** 64),
+        peer_id=2000000002,
+        attachment=attachment
+    )
+
+
+
 
 @TGbot.message_handler(content_types=['text'])
 def get_text_messages(message):
@@ -160,6 +185,8 @@ def get_text_messages(message):
                     peer_id=2000000002,
                     attachment=attachment
                 )
+                messagesFile.discord_messages.append(
+                    ("", "", img))
         elif textt == 'время':
             now = datetime.datetime.now()
             krat = timedelta(hours=3)
@@ -219,6 +246,8 @@ def get_text_messages(message):
                         peer_id=2000000002,
                         attachment=attachment
                     )
+                    messagesFile.discord_messages.append(
+                        ("", "", img))
                 bot.send_photo(-400828697, img)
             else:
                 querystring = {"top": 'Ошибка!', "bottom": 'Указанный мем не найден!!!', "meme": 'FFFFFFFUUUUUUUUUUUU'}
@@ -239,6 +268,8 @@ def get_text_messages(message):
                         peer_id=2000000002,
                         attachment=attachment
                     )
+                    messagesFile.discord_messages.append(
+                        ("", "", img))
                 bot.send_photo(-400828697, img)
         elif "фото сегодня" == textt:
             endpoint = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos"
@@ -266,6 +297,8 @@ def get_text_messages(message):
                         peer_id=2000000002,
                         attachment=attachment
                     )
+                    messagesFile.discord_messages.append(
+                        ("", "", img))
                 TGbot.send_photo(-400828697, img)
             print("Ended")
         elif "фото стандарт" == textt:
@@ -293,6 +326,8 @@ def get_text_messages(message):
                         peer_id=2000000002,
                         attachment=attachment
                     )
+                    messagesFile.discord_messages.append(
+                        ("", "", img))
                 TGbot.send_photo(-400828697, img)
             print("Ended")
         elif textt == "космофото дня":
@@ -314,6 +349,10 @@ def get_text_messages(message):
                     attachment=attachment,
                     message=response.json()["title"] + '\n' + '\n' + response.json()["explanation"]
                 )
+                messagesFile.discord_messages.append(
+                    (response.json()["title"] + '\n' + '\n' + response.json()["explanation"], ""))
+                messagesFile.discord_messages.append(
+                    ("", "", img))
             TGbot.send_message(-400828697, response.json()["title"] + '\n' + '\n' + response.json()["explanation"])
             TGbot.send_photo(-400828697, img)
         elif textt == "интересность о числе":
