@@ -17,6 +17,7 @@ from PIL import Image
 import datetime
 from datetime import timedelta
 import wikipedia
+from main import TGbot
 
 messagesFile.init()
 
@@ -203,6 +204,7 @@ class DiscordBot(commands.Bot):
                                  message=f"""{str(mes.author)}:
                                      {str(mes.content)}""",
                                  random_id=random.randint(0, 2 ** 64))
+                TGbot.send_message(-400828697, str(mes.author) + ": " + str(mes.content))
         except Exception:
             pass
         if mes.content.startswith('!'):

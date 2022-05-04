@@ -127,11 +127,11 @@ class DiscordBot(commands.Bot):
                 except Exception:
                     await mes.channel.send('Что-то пошло не так, возможно вы ввели лишние символы или ещё как-то ошиблись в форме.')
             elif mes.author.id in self.new_users and self.new_users[mes.author.id] != -1:
-                cur_users_data = funcForWorkWithDB.getInformVK(self.new_users[mes.author.id])
+                cur_users_data = fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])
                 print(cur_users_data[0], str(mes.content).split()[0])
                 if cur_users_data[0][2] == str(mes.content).split()[0]:
-                    await mes.channel.send('Ура! Это вы - ' + funcForWorkWithDB.getInformVK(self.new_users[mes.author.id])[0][1] + '?')
-                    funcForWorkWithDB.SetDiscord(cur_users_data[0][1], str(mes.author.id))
+                    await mes.channel.send('Ура! Это вы - ' + fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])[0][1] + '?')
+                    fileForWorkingWithDB.SetDiscord(cur_users_data[0][1], str(mes.author.id))
                 else:
                     await mes.channel.send('Неверный пароль!')
         try:

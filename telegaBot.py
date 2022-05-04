@@ -5,17 +5,17 @@ from VK import TGToken
 
 
 
-bot = telebot.TeleBot(TGToken)
+TGbot = telebot.TeleBot(TGToken)
 
 
-@bot.message_handler(content_types=['text'])
+@TGbot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if message.text == "Привет":
-        bot.send_message(message.from_user.id, "Привет, чем я могу тебе помочь?")
+        TGbot.send_message(message.from_user.id, "Привет, чем я могу тебе помочь?")
     elif message.text == "/help":
-        bot.send_message(message.from_user.id, "Напиши привет")
+        TGbot.send_message(message.from_user.id, "Напиши привет")
     else:
-        bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
+        TGbot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
 
 
-bot.polling(none_stop=True, interval=0)
+TGbot.polling(none_stop=True, interval=0)

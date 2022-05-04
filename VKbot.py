@@ -22,7 +22,7 @@ wikipedia.set_lang("ru")
 members = []
 
 
-async def waiting(longpoll, vk_session, tg_bot):
+async def waiting(longpoll, vk_session, tg_bot, DSBot):
     scen = 0
     vk = vk_session.get_api()
     upload = VkUpload(vk)
@@ -87,8 +87,6 @@ async def waiting(longpoll, vk_session, tg_bot):
                         Для получения дальнейших инструкций вы можете написать t.me/CallMe_SanyaBot.
                         Приятного пользования!''',
                                      random_id=random.randint(0, 2 ** 64))
-
-                    #await disc.send_in_chat(event.obj.message['text'], full_name)
 
                 elif (("день" in textt) or ("время" in textt) or\
                         ("дата" in textt) or ("число" in textt)):
@@ -165,6 +163,7 @@ async def waiting(longpoll, vk_session, tg_bot):
                                              random_id=random.randint(0, 2 ** 64))
                             if event.obj.message['peer_id'] == 2000000002:
                                 tg_bot.send_message(-400828697, (now + krat).strftime('%d/%m/%Y, %H:%M, %A'))
+                                messagesFile.discord_messages.append(((now + krat).strftime('%d/%m/%Y, %H:%M, %A'), ))
                         elif textt == "кто я":
                             try:
                                 req = getInformVK(event.obj.message['from_id'])
@@ -174,6 +173,8 @@ async def waiting(longpoll, vk_session, tg_bot):
                                                  random_id=random.randint(0, 2 ** 64))
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_message(-400828697, f"""Это {req[0][1]}""")
+                                    messagesFile.discord_messages.append(
+                                        (f"""Это {req[0][1]}""",))
                             except Exception:
                                 user_get = vk.users.get(user_ids=(str(event.obj.message['from_id'])))
                                 user_get = user_get[0]
@@ -185,6 +186,8 @@ async def waiting(longpoll, vk_session, tg_bot):
                                                  random_id=random.randint(0, 2 ** 64))
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_message(-400828697, f"""Это {full_name}""")
+                                    messagesFile.discord_messages.append(
+                                        (f"""Это {full_name}""",))
                         elif textt == "id беседы":
                             vk.messages.send(chat_id=event.chat_id,
                                              message="id этой беседы - " + str(event.chat_id),
@@ -197,6 +200,8 @@ async def waiting(longpoll, vk_session, tg_bot):
                                                  random_id=random.randint(0, 2 ** 64))
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_message(-400828697, wikipedia.summary(textt[5:]))
+                                    messagesFile.discord_messages.append(
+                                        (wikipedia.summary(textt[5:]),))
                             except Exception as e:
                                 print(e)
                                 vk.messages.send(chat_id=event.chat_id,
@@ -204,6 +209,8 @@ async def waiting(longpoll, vk_session, tg_bot):
                                                  random_id=random.randint(0, 2 ** 64))
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_message(-400828697, "Ошибка!!!")
+                                    messagesFile.discord_messages.append(
+                                        ("Ошибка!!!",))
                         elif textt[:3] == "мем":
                             temp = textt.replace("мем ", '')
 
@@ -242,6 +249,7 @@ async def waiting(longpoll, vk_session, tg_bot):
                                 )
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_photo(-400828697, img)
+                                    DSBot.send_photo(img)
                             else:
                                 querystring = {"top": 'Ошибка!', "bottom": 'Указанный мем не найден!!!', "meme": 'FFFFFFFUUUUUUUUUUUU'}
                                 endpoint = "https://apimeme.com/meme"
@@ -262,36 +270,7 @@ async def waiting(longpoll, vk_session, tg_bot):
                                 )
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_photo(-400828697, img)
-
-                if "фото" == textt:
-                    endpoint = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos"
-
-                    print("TRACK")
-                    #query_params = {"api_key": Nasa_api, "earth_date": datetime.date.today().strftime("%y-%m-%d")}
-                    query_params = {"api_key": Nasa_api, "earth_date": "2020-07-01"}
-                    print(type(datetime.date.today().strftime("%y-%m-%d")))
-                    response = requests.get(endpoint, params=query_params)
-                    photos = response.json()["photos"]
-                    print("NEXT TRACK")
-                    for i in range(len(photos)):
-                        print(i)
-                        img = requests.get(photos[i]["img_src"]).content
-                        f = BytesIO(img)
-
-                        photo = upload.photo_messages(f)[0]
-
-                        owner_id = photo['owner_id']
-                        photo_id = photo['id']
-                        access_key = photo['access_key']
-                        attachment = f'photo{owner_id}_{photo_id}_{access_key}'
-                        vk.messages.send(
-                            random_id=random.randint(0, 2 ** 64),
-                            peer_id=event.message.peer_id,
-                            attachment=attachment
-                        )
-                        if event.obj.message['peer_id'] == 2000000002:
-                            tg_bot.send_photo(-400828697, img)
-                    print("Ended")
+                                    DSBot.send_photo(img)
 
                 if ("котик" in textt) or ("котейка" in textt):
                     imgURL = requests.get("https://aws.random.cat/meow")
@@ -319,6 +298,7 @@ async def waiting(longpoll, vk_session, tg_bot):
                     )
                     if event.obj.message['peer_id'] == 2000000002:
                         tg_bot.send_photo(-400828697, img)
+                        DSBot.send_photo(img)
 
                 elif textt == "космофото дня":
                     response = requests.get("https://api.nasa.gov/planetary/apod?api_key=" + Nasa_api)
@@ -339,7 +319,9 @@ async def waiting(longpoll, vk_session, tg_bot):
                         message=response.json()["title"] + '\n' + '\n' + response.json()["explanation"]
                     )
                     if event.obj.message['peer_id'] == 2000000002:
+                        tg_bot.send_message(-400828697, response.json()["title"] + '\n' + '\n' + response.json()["explanation"])
                         tg_bot.send_photo(-400828697, img)
+                        DSBot.send_photo(img)
 
                 elif textt == "интересность о числе":
                     response = requests.get("http://numbersapi.com/random/")
@@ -356,6 +338,7 @@ async def waiting(longpoll, vk_session, tg_bot):
                     )
                     if event.obj.message['peer_id'] == 2000000002:
                         tg_bot.send_message(-400828697, translation)
+                        messagesFile.discord_messages.append((translation,))
 
                 elif textt[:20] == "интересность о числе":
                     textt = textt.replace("интересность о числе ", '')
@@ -376,9 +359,68 @@ async def waiting(longpoll, vk_session, tg_bot):
                         )
                         if event.obj.message['peer_id'] == 2000000002:
                             tg_bot.send_message(-400828697, translation)
+                            messagesFile.discord_messages.append((translation,))
                     except Exception as e:
                         vk.messages.send(
                             random_id=random.randint(0, 2 ** 64),
                             peer_id=event.message.peer_id,
                             message=e
                         )
+                if "фото стандарт" == textt:
+                    endpoint = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos"
+
+                    print("TRACK")
+                    query_params = {"api_key": Nasa_api, "earth_date": "2020-07-01"}
+                    print(type(datetime.date.today().strftime("%y-%m-%d")))
+                    response = requests.get(endpoint, params=query_params)
+                    photos = response.json()["photos"]
+                    print("NEXT TRACK")
+                    for i in range(len(photos)):
+                        print(i)
+                        img = requests.get(photos[i]["img_src"]).content
+                        f = BytesIO(img)
+
+                        photo = upload.photo_messages(f)[0]
+
+                        owner_id = photo['owner_id']
+                        photo_id = photo['id']
+                        access_key = photo['access_key']
+                        attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                        vk.messages.send(
+                            random_id=random.randint(0, 2 ** 64),
+                            peer_id=event.message.peer_id,
+                            attachment=attachment
+                        )
+                        if event.obj.message['peer_id'] == 2000000002:
+                            tg_bot.send_photo(-400828697, img)
+                            DSBot.send_photo(img)
+                    print("Ended")
+                elif "фото сегодня" == textt:
+                    endpoint = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos"
+
+                    print("TRACK")
+                    query_params = {"api_key": Nasa_api, "earth_date": datetime.date.today().strftime("%y-%m-%d")}
+                    print(type(datetime.date.today().strftime("%y-%m-%d")))
+                    response = requests.get(endpoint, params=query_params)
+                    photos = response.json()["photos"]
+                    print("NEXT TRACK")
+                    for i in range(len(photos)):
+                        print(i)
+                        img = requests.get(photos[i]["img_src"]).content
+                        f = BytesIO(img)
+
+                        photo = upload.photo_messages(f)[0]
+
+                        owner_id = photo['owner_id']
+                        photo_id = photo['id']
+                        access_key = photo['access_key']
+                        attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                        vk.messages.send(
+                            random_id=random.randint(0, 2 ** 64),
+                            peer_id=event.message.peer_id,
+                            attachment=attachment
+                        )
+                        if event.obj.message['peer_id'] == 2000000002:
+                            tg_bot.send_photo(-400828697, img)
+                            DSBot.send_photo(img)
+                    print("Ended")
