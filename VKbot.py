@@ -7,7 +7,6 @@ from fileForWorkingWithDB import insertVK, VKpass, getInformVK
 from vk_api.upload import VkUpload
 import asyncio
 import wikipedia
-import telegram
 import requests
 from io import BytesIO
 from VK import Nasa_api, GIF_api, IAM_TOKEN, TGToken
