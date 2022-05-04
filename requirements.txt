@@ -1,2 +1,10 @@
 vk-api==11.9.7
-python-telegram-bot==13.11
+pyTelegramBotAPI==4.4.1
+aiohttp==3.7.4.post0
+async-timeout==3.0.1
+discord.py==1.7.3
+googletrans==3.0.0
+Pillow==9.1.0
+requests==2.27.1
+translate==3.6.1
+wikipedia==1.4.0
