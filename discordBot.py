@@ -283,6 +283,4 @@ bot.add_cog(BotsCog(bot))
 
 bot.loop.create_task(bot.send_on_timer('bot_talking', messagesFile.discord_messages))
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(bot.run(TOKEN))
-loop.close()
+bot.run(TOKEN)
