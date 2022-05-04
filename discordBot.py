@@ -167,7 +167,12 @@ class DiscordBot(commands.Bot):
                 if channel_name == channel.name:
                     cur_id = channel.id
         if len(messages_list) > 0:
-            await self.get_channel(cur_id).send('(' + messages_list[0][1] + '): ' + messages_list[0][0])
+            try:
+                with open('new_p.png', 'wb') as new_p:
+                    new_p.write(messages_list[0][2])
+                await self.get_channel(cur_id).send(file=discord.File('new_p.png'))
+            except Exception:
+                await self.get_channel(cur_id).send('(' + messages_list[0][1] + '): ' + messages_list[0][0])
             messages_list.pop(0)
         self.loop.create_task(self.send_on_timer(channel_name, messages_list))
 
