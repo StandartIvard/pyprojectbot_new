@@ -235,7 +235,7 @@ class DiscordBot(commands.Bot):
             if mes.channel.name != 'bot_talking':
                 return
         except AttributeError:
-            if mes.content.startswith('!привязать'):
+            if mes.content.startswith('!привязать') and mes.author.id not in self.new_users:
                 await mes.channel.send('Напишите ваш VK ID.')
                 self.new_users[mes.author.id] = -1
             elif mes.author.id in self.new_users and self.new_users[mes.author.id] == -1:
