@@ -190,7 +190,7 @@ class DiscordBot(commands.Bot):
             for chat in guild.text_channels:
                 if chat.name == 'bot_talking':
                     self.crosschat = chat
-        await TG_bot()
+        await TG_bot(self)
 
     async def on_message(self, mes):
         if mes.author == self.user:
