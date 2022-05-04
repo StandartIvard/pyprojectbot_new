@@ -9,6 +9,13 @@ def getInformVK(id):
     return cur.execute("SELECT * FROM users WHERE vkid = '" + str(id) + "';").fetchall()
 
 
+def getInformDiscord(id):
+    con = sqlite3.connect('DBuser.db')
+    cur = con.cursor()
+    print(str(id))
+    return cur.execute("SELECT * FROM users WHERE dsid = '" + str(id) + "';").fetchall()
+
+
 def insertVK(name, id):
     con = sqlite3.connect('DBuser.db')
     cur = con.cursor()
@@ -52,6 +59,12 @@ def SetPassword(name, password):
     p = password.hexdigest()
     cur.execute("UPDATE users SET password = '" + str(p) + "' WHERE name = '" + name + "';")
     con.commit()
+
+
+def getInformAll():
+    con = sqlite3.connect('DBuser.db')
+    cur = con.cursor()
+    return cur.execute("SELECT * FROM users").fetchall()
 
 
 con = sqlite3.connect('DBuser.db')

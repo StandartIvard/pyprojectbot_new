@@ -15,6 +15,7 @@ import asyncio
 import messagesFile
 from io import BytesIO
 from PIL import Image
+from fileForWorkingWithDB import getInformAll
 import datetime
 from datetime import timedelta
 import wikipedia
@@ -191,9 +192,10 @@ class DiscordBot(commands.Bot):
             for chat in guild.text_channels:
                 if chat.name == 'bot_talking':
                     self.crosschat = chat
-        for key in self.new_users:
-            if self.new_users[key] > 0:
-                self.new_users[key] = 0
+        everyone = getInformAll()
+        for one in everyone:
+            if one[5] != None:
+                self.new_users[one[5]] = 0
         await TG_bot(self)
 
     async def on_message(self, mes):
