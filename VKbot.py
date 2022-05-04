@@ -319,6 +319,7 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                         message=response.json()["title"] + '\n' + '\n' + response.json()["explanation"]
                     )
                     if event.obj.message['peer_id'] == 2000000002:
+                        tg_bot.send_message(-400828697, response.json()["title"] + '\n' + '\n' + response.json()["explanation"])
                         tg_bot.send_photo(-400828697, img)
                         DSBot.send_photo(img)
 
