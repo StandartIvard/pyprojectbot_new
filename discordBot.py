@@ -5,6 +5,7 @@ import fileForWorkingWithDB
 from discord_token import TOKEN
 from VKbot import waiting
 from vk_api.upload import VkUpload
+import hashlib
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from VK import VKToken, TGToken
@@ -242,8 +243,9 @@ class DiscordBot(commands.Bot):
                     await mes.channel.send('Что-то пошло не так, возможно вы ввели лишние символы или ещё как-то ошиблись в форме.')
             elif mes.author.id in self.new_users and self.new_users[mes.author.id] != -1:
                 cur_users_data = fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])
-                print(cur_users_data[0], str(mes.content).split()[0])
-                if cur_users_data[0][2] == str(mes.content).split()[0]:
+                password = hashlib.md5(bytes(mes.content, encoding='utf8'))
+                p = password.hexdigest()
+                if cur_users_data[0][2] == str(p):
                     await mes.channel.send('Ура! Это вы - ' + fileForWorkingWithDB.getInformVK(self.new_users[mes.author.id])[0][1] + '?')
                     fileForWorkingWithDB.SetDiscord(cur_users_data[0][1], str(mes.author.id))
                 else:
