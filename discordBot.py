@@ -165,17 +165,15 @@ class DiscordBot(commands.Bot):
 
     async def send_on_timer(self, channel_name, messages_list):
         await asyncio.sleep(0.01)
-        for guild in self.guilds:
-            for channel in guild.text_channels:
-                if channel_name == channel.name:
-                    cur_id = channel.id
         if len(messages_list) > 0:
             try:
                 with open('new_p.png', 'wb') as new_p:
                     new_p.write(messages_list[0][2])
-                await self.get_channel(cur_id).send(file=discord.File('new_p.png'))
+                if messages_list[0][0] != '':
+                    await self.send_in_chat(messages_list[0][0], messages_list[0][1])
+                await self.crosschat.send(file=discord.File('new_p.png'))
             except Exception:
-                await self.get_channel(cur_id).send('(' + messages_list[0][1] + '): ' + messages_list[0][0])
+                await self.crosschat.send('(' + messages_list[0][1] + '): ' + messages_list[0][0])
             messages_list.pop(0)
         self.loop.create_task(self.send_on_timer(channel_name, messages_list))
 

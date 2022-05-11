@@ -108,7 +108,7 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                         print(req[0][1])
                         #await disc.send_in_chat(event.obj.message['text'], req[0][1])
                         if event.obj.message['text']:
-                            messagesFile.discord_messages.append((event.obj.message['text'], req[0][1]))
+                            messagesFile.discord_messages.append((event.obj.message['text'], req[0][1], None))
                             tg_bot.send_message(-400828697, req[0][1] + ": " + event.obj.message['text'])
                         if len(event.obj.message["attachments"]) > 0:
                             if event.obj.message["attachments"][0]['type'] == "photo":
