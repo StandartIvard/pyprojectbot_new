@@ -172,18 +172,18 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                                              random_id=random.randint(0, 2 ** 64))
                             if event.obj.message['peer_id'] == 2000000002:
                                 tg_bot.send_message(-400828697, (now + krat).strftime('%d/%m/%Y, %H:%M, %A'))
-                                messagesFile.discord_messages.append(((now + krat).strftime('%d/%m/%Y, %H:%M, %A'), ))
+                                messagesFile.discord_messages.append(((now + krat).strftime('%d/%m/%Y, %H:%M, %A'), ''))
                         elif textt == "кто я":
                             try:
                                 req = getInformVK(event.obj.message['from_id'])
                                 print(req)
                                 vk.messages.send(chat_id=event.chat_id,
-                                                 message=f"""Это {req[0][1]}""",
+                                                 message=f'[id{event.obj.message["from_id"]}|Это {req[0][1]}]',
                                                  random_id=random.randint(0, 2 ** 64))
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_message(-400828697, f"""Это {req[0][1]}""")
                                     messagesFile.discord_messages.append(
-                                        (f"""Это {req[0][1]}""",))
+                                        (f"""Это {req[0][1]}""", ''))
                             except Exception:
                                 user_get = vk.users.get(user_ids=(str(event.obj.message['from_id'])))
                                 user_get = user_get[0]
@@ -191,12 +191,12 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                                 last_name = user_get['last_name']
                                 full_name = first_name + " " + last_name
                                 vk.messages.send(chat_id=event.chat_id,
-                                                 message=f"""Это {full_name}""",
+                                                 message=f'[id{event.obj.message["from_id"]}|Это {full_name}]',
                                                  random_id=random.randint(0, 2 ** 64))
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_message(-400828697, f"""Это {full_name}""")
                                     messagesFile.discord_messages.append(
-                                        (f"""Это {full_name}""",))
+                                        (f"""Это {full_name}""", ''))
                         elif textt == "id беседы":
                             vk.messages.send(chat_id=event.chat_id,
                                              message="id этой беседы - " + str(event.chat_id),
@@ -210,7 +210,7 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_message(-400828697, wikipedia.summary(textt[5:]))
                                     messagesFile.discord_messages.append(
-                                        (wikipedia.summary(textt[5:]),))
+                                        (wikipedia.summary(textt[5:]), ''))
                             except Exception as e:
                                 print(e)
                                 vk.messages.send(chat_id=event.chat_id,
@@ -219,7 +219,7 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                                 if event.obj.message['peer_id'] == 2000000002:
                                     tg_bot.send_message(-400828697, "Ошибка!!!")
                                     messagesFile.discord_messages.append(
-                                        ("Ошибка!!!",))
+                                        ("Ошибка!!!", ''))
                         elif textt[:3] == "мем":
                             temp = textt.replace("мем ", '')
 
@@ -282,35 +282,63 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                                     tg_bot.send_photo(-400828697, img)
                                     messagesFile.discord_messages.append(
                                         ("", "", img))
+                        if textt == "info":
+                            text = """Список команд:
+                            регистрация - Отправьте в личных сообщениях боту чтобы начать регистрацию
+                            /info - получение списка команд бота
+                            сообщение содержащее 'котик' или 'котейка' - бот пришлёр надомную картинку котика :з
+                            время - бот пришлёт день/месяц/год и время
+                            вики <<запрос>> - бот пришлёт статью из википедии по данному запросу
+                            мем <<номер шаблона>>,<<верхний текст>>,<<нижний текст>> - бот пришлёт готовый мем собранный по заданным параметрам
+                            фото сегодня - бот пришлёт подборку снимков Nasa с марса за сегодняшний день
+                            фото стандарт - бот пришлёт подборку снимков с марса за 1 июля 2020 года
+                            космофото дня - бот пришлёт фото дня Nasa с описанием на английском
+                            интересность о числе - бот пришлёт интеренсый факт о рандомном числе
+                            интересность о числе <<цифра>> - бот пришлёт интересность о введённом числе
+    """
+                            vk.messages.send(
+                                random_id=random.randint(0, 2 ** 64),
+                                peer_id=event.message.peer_id,
+                                message=text
+                            )
 
                 if ("котик" in textt) or ("котейка" in textt):
                     imgURL = requests.get("https://aws.random.cat/meow")
                     data = imgURL.text
                     print(data)
                     print("REAGY")
-                    img = requests.get(imgURL.json()["file"]).content
-                    f = BytesIO(img)
+                    try:
+                        img = requests.get(imgURL.json()["file"]).content
+                        f = BytesIO(img)
 
-                    photo = upload.photo_messages(f)[0]
+                        photo = upload.photo_messages(f)[0]
 
-                    owner_id = photo['owner_id']
-                    photo_id = photo['id']
-                    access_key = photo['access_key']
-                    attachment = f'photo{owner_id}_{photo_id}_{access_key}'
-                    vk.messages.send(
-                        random_id=random.randint(0, 2 ** 64),
-                        peer_id=event.message.peer_id,
-                        message='Кто-то сказал "котик"?'
-                    )
-                    vk.messages.send(
-                        random_id=random.randint(0, 2 ** 64),
-                        peer_id=event.message.peer_id,
-                        attachment=attachment
-                    )
-                    if event.obj.message['peer_id'] == 2000000002:
-                        tg_bot.send_photo(-400828697, img)
-                        messagesFile.discord_messages.append(
-                            ("", "", img))
+                        owner_id = photo['owner_id']
+                        photo_id = photo['id']
+                        access_key = photo['access_key']
+                        attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                        vk.messages.send(
+                            random_id=random.randint(0, 2 ** 64),
+                            peer_id=event.message.peer_id,
+                            message='Кто-то сказал "котик"?'
+                        )
+                        vk.messages.send(
+                            random_id=random.randint(0, 2 ** 64),
+                            peer_id=event.message.peer_id,
+                            attachment=attachment
+                        )
+                        if event.obj.message['peer_id'] == 2000000002:
+                            tg_bot.send_photo(-400828697, img)
+                            messagesFile.discord_messages.append(
+                                ("", "", img))
+                    except Exception as e:
+                        vk.messages.send(
+                            random_id=random.randint(0, 2 ** 64),
+                            peer_id=event.message.peer_id,
+                            message='На этот раз без котейки :-('
+                        )
+                        tg_bot.send_message(-400828697, 'На этот раз без котейки :-(')
+                        print(e)
 
                 elif textt == "космофото дня":
                     response = requests.get("https://api.nasa.gov/planetary/apod?api_key=" + Nasa_api)
@@ -351,7 +379,7 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                     )
                     if event.obj.message['peer_id'] == 2000000002:
                         tg_bot.send_message(-400828697, translation)
-                        messagesFile.discord_messages.append((translation,))
+                        messagesFile.discord_messages.append((translation, ''))
 
                 elif textt[:20] == "интересность о числе":
                     textt = textt.replace("интересность о числе ", '')
@@ -372,7 +400,7 @@ async def waiting(longpoll, vk_session, tg_bot, DSBot):
                         )
                         if event.obj.message['peer_id'] == 2000000002:
                             tg_bot.send_message(-400828697, translation)
-                            messagesFile.discord_messages.append((translation,))
+                            messagesFile.discord_messages.append((translation, ''))
                     except Exception as e:
                         vk.messages.send(
                             random_id=random.randint(0, 2 ** 64),

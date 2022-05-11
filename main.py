@@ -163,30 +163,39 @@ def get_text_messages(message):
             data = imgURL.text
             print(data)
             print("REAGY")
-            img = requests.get(imgURL.json()["file"]).content
-            TGbot.send_message(message.chat.id, 'Кто-то сказал "котик"?')
-            TGbot.send_photo(message.chat.id, img)
-            if message.chat.id == -400828697:
-                f = BytesIO(img)
+            try:
+                img = requests.get(imgURL.json()["file"]).content
+                TGbot.send_message(message.chat.id, 'Кто-то сказал "котик"?')
+                TGbot.send_photo(message.chat.id, img)
+                if message.chat.id == -400828697:
+                    f = BytesIO(img)
 
-                photo = upload.photo_messages(f)[0]
+                    photo = upload.photo_messages(f)[0]
 
-                owner_id = photo['owner_id']
-                photo_id = photo['id']
-                access_key = photo['access_key']
-                attachment = f'photo{owner_id}_{photo_id}_{access_key}'
-                vk.messages.send(
-                    random_id=random.randint(0, 2 ** 64),
-                    peer_id=2000000002,
-                    message='Кто-то сказал "котик"?'
-                )
-                vk.messages.send(
-                    random_id=random.randint(0, 2 ** 64),
-                    peer_id=2000000002,
-                    attachment=attachment
-                )
-                messagesFile.discord_messages.append(
-                    ("", "", img))
+                    owner_id = photo['owner_id']
+                    photo_id = photo['id']
+                    access_key = photo['access_key']
+                    attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+                    vk.messages.send(
+                        random_id=random.randint(0, 2 ** 64),
+                        peer_id=2000000002,
+                        message='Кто-то сказал "котик"?'
+                    )
+                    vk.messages.send(
+                        random_id=random.randint(0, 2 ** 64),
+                        peer_id=2000000002,
+                        attachment=attachment
+                    )
+                    messagesFile.discord_messages.append(
+                        ("", "", img))
+            except Exception as e:
+                if message.chat.id == -400828697:
+                    vk.messages.send(
+                        random_id=random.randint(0, 2 ** 64),
+                        peer_id=2000000002,
+                        message='На этот раз без котейки :-('
+                    )
+                TGbot.send_message(message.chat.id, 'На этот раз без котейки :-(')
         elif textt == 'время':
             now = datetime.datetime.now()
             krat = timedelta(hours=3)
